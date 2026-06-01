@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -55,6 +56,9 @@ class ResearchService:
             if stored_run is None:
                 raise RuntimeError(f"Run disappeared after save: {run.id}")
             return ResearchResult(run=stored_run, report=report)
+        except asyncio.CancelledError:
+            self._repository.update_run_status(run.id, RunStatus.FAILED)
+            raise
         except Exception:
             self._repository.update_run_status(run.id, RunStatus.FAILED)
             raise
