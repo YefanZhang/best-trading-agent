@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -6,12 +7,24 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from best_trading_agent.data.adapters import FixtureResearchDataAdapter
-from best_trading_agent.domain.models import DataWarning, Report, ResearchRun, SourceDocument
+from best_trading_agent.domain.models import (
+    DataWarning,
+    Report,
+    ResearchRun,
+    RunStatus,
+    SourceDocument,
+)
 from best_trading_agent.llm.providers import DeterministicResearchProvider
 from best_trading_agent.research.service import ResearchService
 from best_trading_agent.storage.repositories import ResearchRepository
 
 router = APIRouter()
+_EVENT_POLL_INTERVAL_SECONDS = 0.01
+_TERMINAL_STATUSES = {
+    RunStatus.COMPLETED,
+    RunStatus.COMPLETED_WITH_WARNINGS,
+    RunStatus.FAILED,
+}
 
 
 class RunRequest(BaseModel):
@@ -123,6 +136,22 @@ async def run_events(run_id: str, request: Request) -> StreamingResponse:
         raise HTTPException(status_code=404, detail="Run not found")
 
     async def stream() -> AsyncIterator[str]:
-        yield f"event: status\ndata: {run.status.value}\n\n"
+        last_status: RunStatus | None = None
+        while True:
+            if await request.is_disconnected():
+                break
+
+            current_run = repository.get_run(run_id)
+            if current_run is None:
+                break
+
+            if current_run.status != last_status:
+                last_status = current_run.status
+                yield f"event: status\ndata: {current_run.status.value}\n\n"
+
+            if current_run.status in _TERMINAL_STATUSES:
+                break
+
+            await asyncio.sleep(_EVENT_POLL_INTERVAL_SECONDS)
 
     return StreamingResponse(stream(), media_type="text/event-stream")
