@@ -141,7 +141,9 @@ Create `/Users/yefanzhang/workplace/best-trading-agent/Makefile`:
 
 install:
 	uv sync --extra dev
-	npm install
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend ci; \
+	fi
 
 test:
 	uv run pytest
@@ -184,7 +186,7 @@ Local-first research assistant for US equities and listed options.
 
 ```bash
 uv sync --extra dev
-npm install
+npm --prefix frontend ci
 uv run pytest
 ```
 
@@ -2129,8 +2131,7 @@ The current data adapter is a deterministic development fixture. Live free/publi
 
 ```bash
 uv sync --extra dev
-npm install
-npm --prefix frontend install
+npm --prefix frontend ci
 ```
 
 ## Test
