@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from sqlalchemy.orm import Session, sessionmaker
 
 from best_trading_agent.domain.models import (
@@ -11,6 +13,12 @@ from best_trading_agent.domain.models import (
     TradeIdea,
 )
 from best_trading_agent.storage.schema import ReportRecord, RunRecord, SourceRecord
+
+
+def _as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 class ResearchRepository:
@@ -50,7 +58,7 @@ class ResearchRepository:
             return ResearchRun(
                 id=record.id,
                 ticker=record.ticker,
-                created_at=record.created_at,
+                created_at=_as_utc(record.created_at),
                 status=RunStatus(record.status),
                 warnings=[DataWarning(**warning) for warning in record.warnings],
             )
@@ -62,7 +70,7 @@ class ResearchRepository:
                 ResearchRun(
                     id=record.id,
                     ticker=record.ticker,
-                    created_at=record.created_at,
+                    created_at=_as_utc(record.created_at),
                     status=RunStatus(record.status),
                     warnings=[DataWarning(**warning) for warning in record.warnings],
                 )
@@ -94,7 +102,7 @@ class ResearchRepository:
                     source_type=SourceType(record.source_type),
                     title=record.title,
                     url=record.url,
-                    retrieved_at=record.retrieved_at,
+                    retrieved_at=_as_utc(record.retrieved_at),
                     payload=record.payload,
                 )
                 for record in records
