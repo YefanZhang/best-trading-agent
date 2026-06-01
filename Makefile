@@ -6,17 +6,29 @@ install:
 
 test:
 	uv run pytest
-	npm --prefix frontend test -- --run
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend test -- --run; \
+	else \
+		echo "frontend/package.json not found; skipping frontend test"; \
+	fi
 
 lint:
 	uv run ruff check .
 
 typecheck:
 	uv run mypy src
-	npm --prefix frontend run typecheck
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend run typecheck; \
+	else \
+		echo "frontend/package.json not found; skipping frontend typecheck"; \
+	fi
 
 backend:
-	uv run uvicorn best_trading_agent.api.main:create_app --factory --reload
+	@echo "Backend available after API scaffolding in Task 6"
 
 frontend:
-	npm --prefix frontend run dev
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend run dev; \
+	else \
+		echo "frontend/package.json not found; skipping frontend dev"; \
+	fi

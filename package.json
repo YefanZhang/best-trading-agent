@@ -2,8 +2,9 @@
   "name": "best-trading-agent-workspace",
   "private": true,
   "scripts": {
-    "test": "npm --prefix frontend test",
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build"
+    "test": "if [ -f frontend/package.json ]; then npm --prefix frontend test; else echo \"frontend/package.json not found; skipping frontend test\"; fi",
+    "dev": "if [ -f frontend/package.json ]; then npm --prefix frontend run dev; else echo \"frontend/package.json not found; skipping frontend dev\"; fi",
+    "build": "if [ -f frontend/package.json ]; then npm --prefix frontend run build; else echo \"frontend/package.json not found; skipping frontend build\"; fi",
+    "typecheck": "if [ -f frontend/package.json ]; then npm --prefix frontend run typecheck; else echo \"frontend/package.json not found; skipping frontend typecheck\"; fi"
   }
 }

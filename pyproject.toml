@@ -20,9 +20,6 @@ dev = [
   "ruff>=0.6.2",
 ]
 
-[project.scripts]
-best-trading-agent = "best_trading_agent.cli:app"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
