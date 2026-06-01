@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -85,6 +85,38 @@ def test_repository_preserves_utc_datetimes_after_round_trip() -> None:
     assert stored_run is not None
     assert stored_run.created_at.tzinfo is UTC
     assert stored_source.retrieved_at.tzinfo is UTC
+
+
+def test_repository_normalizes_non_utc_datetimes_before_storing() -> None:
+    session_factory = create_session_factory("sqlite+pysqlite:///:memory:")
+    create_schema(session_factory)
+    repo = ResearchRepository(session_factory)
+    pacific = timezone(timedelta(hours=-7))
+
+    run = ResearchRun(
+        id="run-1",
+        ticker="NVDA",
+        created_at=datetime(2026, 6, 1, 9, 30, tzinfo=pacific),
+    )
+    source = SourceDocument(
+        id="src-1",
+        run_id=run.id,
+        source_type=SourceType.NEWS,
+        title="News",
+        url="https://example.com",
+        retrieved_at=datetime(2026, 6, 1, 10, 15, tzinfo=pacific),
+        payload={"headline": "Example"},
+    )
+
+    repo.save_run(run)
+    repo.save_source(source)
+
+    stored_run = repo.get_run(run.id)
+    stored_source = repo.list_sources(run.id)[0]
+
+    assert stored_run is not None
+    assert stored_run.created_at == datetime(2026, 6, 1, 16, 30, tzinfo=UTC)
+    assert stored_source.retrieved_at == datetime(2026, 6, 1, 17, 15, tzinfo=UTC)
 
 
 def test_repository_rejects_source_for_missing_run() -> None:

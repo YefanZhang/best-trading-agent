@@ -31,7 +31,7 @@ class ResearchRepository:
                 RunRecord(
                     id=run.id,
                     ticker=run.ticker,
-                    created_at=run.created_at,
+                    created_at=_as_utc(run.created_at),
                     status=run.status.value,
                     warnings=[warning.__dict__ for warning in run.warnings],
                 )
@@ -86,7 +86,7 @@ class ResearchRepository:
                     source_type=source.source_type.value,
                     title=source.title,
                     url=source.url,
-                    retrieved_at=source.retrieved_at,
+                    retrieved_at=_as_utc(source.retrieved_at),
                     payload=source.payload,
                 )
             )
