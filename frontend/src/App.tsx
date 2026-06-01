@@ -1,8 +1,32 @@
-import { Play } from "lucide-react";
+import { useState } from "react";
+
+import { createResearchRun, type ResearchResult } from "./api/client";
+import { ReportView } from "./components/ReportView";
+import { RunForm } from "./components/RunForm";
 
 const panels = ["Ticker command", "Market snapshot", "Catalysts", "Generated memo"];
 
-export function App() {
+type AppProps = {
+  createRun?: (ticker: string) => Promise<ResearchResult>;
+};
+
+export function App({ createRun = createResearchRun }: AppProps) {
+  const [result, setResult] = useState<ResearchResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleRun(ticker: string) {
+    setIsRunning(true);
+    setError(null);
+    try {
+      setResult(await createRun(ticker));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Research request failed");
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="Workbench navigation">
@@ -20,18 +44,21 @@ export function App() {
             <p className="eyebrow">US equities and options</p>
             <h1>Research Workbench</h1>
           </div>
-          <button className="primary-button" type="button">
-            <Play size={17} strokeWidth={2.2} aria-hidden="true" />
-            Start research
-          </button>
+          <RunForm disabled={isRunning} onSubmit={handleRun} />
         </header>
-        <section className="panel-grid" aria-label="Research panels">
-          {panels.map((panel) => (
-            <div className={`panel${panel === "Generated memo" ? " wide" : ""}`} key={panel}>
-              {panel}
-            </div>
-          ))}
-        </section>
+        {isRunning ? <p className="status-line">Running research...</p> : null}
+        {error ? <p role="alert">{error}</p> : null}
+        {result ? (
+          <ReportView report={result.report} run={result.run} />
+        ) : (
+          <section className="panel-grid" aria-label="Research panels">
+            {panels.map((panel) => (
+              <div className={`panel${panel === "Generated memo" ? " wide" : ""}`} key={panel}>
+                {panel}
+              </div>
+            ))}
+          </section>
+        )}
       </section>
     </main>
   );
