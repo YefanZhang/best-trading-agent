@@ -54,6 +54,24 @@ class ReportRecord(Base):
     run: Mapped[RunRecord] = relationship(back_populates="report")
 
 
+class OptionsSnapshotRecord(Base):
+    __tablename__ = "options_snapshots"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    ticker: Mapped[str] = mapped_column(String, index=True)
+    retrieved_at: Mapped[Any] = mapped_column(DateTime(timezone=True))
+    contracts: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    warnings: Mapped[list[dict[str, str]]] = mapped_column(JSON, default=list)
+
+
+class WatchlistRecord(Base):
+    __tablename__ = "watchlist"
+
+    ticker: Mapped[str] = mapped_column(String, primary_key=True)
+    created_at: Mapped[Any] = mapped_column(DateTime(timezone=True))
+
+
 def create_schema(session_factory: sessionmaker[Session]) -> None:
     bind = session_factory.kw["bind"]
     Base.metadata.create_all(bind)

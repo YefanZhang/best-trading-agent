@@ -91,3 +91,9 @@ class Report:
     sections: list[ReportSection]
     trade_ideas: list[TradeIdea]
     warnings: list[DataWarning] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class WatchlistEntry:
+    ticker: str
+    created_at: datetime

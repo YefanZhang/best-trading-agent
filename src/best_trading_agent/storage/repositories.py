@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from best_trading_agent.domain.models import (
     DataWarning,
+    OptionContract,
+    OptionsSnapshot,
     Report,
     ReportSection,
     ResearchRun,
@@ -11,8 +13,15 @@ from best_trading_agent.domain.models import (
     SourceDocument,
     SourceType,
     TradeIdea,
+    WatchlistEntry,
 )
-from best_trading_agent.storage.schema import ReportRecord, RunRecord, SourceRecord
+from best_trading_agent.storage.schema import (
+    OptionsSnapshotRecord,
+    ReportRecord,
+    RunRecord,
+    SourceRecord,
+    WatchlistRecord,
+)
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -108,6 +117,49 @@ class ResearchRepository:
                 for record in records
             ]
 
+    def get_source(self, source_id: str) -> SourceDocument | None:
+        with self._session_factory() as session:
+            record = session.get(SourceRecord, source_id)
+            if record is None:
+                return None
+            return SourceDocument(
+                id=record.id,
+                run_id=record.run_id,
+                source_type=SourceType(record.source_type),
+                title=record.title,
+                url=record.url,
+                retrieved_at=_as_utc(record.retrieved_at),
+                payload=record.payload,
+            )
+
+    def save_options_snapshot(self, snapshot: OptionsSnapshot) -> None:
+        with self._session_factory() as session:
+            session.add(
+                OptionsSnapshotRecord(
+                    id=snapshot.id,
+                    run_id=snapshot.run_id,
+                    ticker=snapshot.ticker,
+                    retrieved_at=_as_utc(snapshot.retrieved_at),
+                    contracts=[contract.__dict__ for contract in snapshot.contracts],
+                    warnings=[warning.__dict__ for warning in snapshot.warnings],
+                )
+            )
+            session.commit()
+
+    def get_options_snapshot(self, run_id: str) -> OptionsSnapshot | None:
+        with self._session_factory() as session:
+            record = session.query(OptionsSnapshotRecord).filter_by(run_id=run_id).one_or_none()
+            if record is None:
+                return None
+            return OptionsSnapshot(
+                id=record.id,
+                run_id=record.run_id,
+                ticker=record.ticker,
+                retrieved_at=_as_utc(record.retrieved_at),
+                contracts=[OptionContract(**contract) for contract in record.contracts],
+                warnings=[DataWarning(**warning) for warning in record.warnings],
+            )
+
     def save_report(self, report: Report) -> None:
         with self._session_factory() as session:
             session.add(
@@ -133,3 +185,18 @@ class ResearchRepository:
                 trade_ideas=[TradeIdea(**idea) for idea in record.trade_ideas],
                 warnings=[DataWarning(**warning) for warning in record.warnings],
             )
+
+    def add_watchlist_entry(self, ticker: str) -> WatchlistEntry:
+        entry = WatchlistEntry(ticker=ticker.upper(), created_at=datetime.now(UTC))
+        with self._session_factory() as session:
+            session.merge(WatchlistRecord(ticker=entry.ticker, created_at=entry.created_at))
+            session.commit()
+        return entry
+
+    def list_watchlist_entries(self) -> list[WatchlistEntry]:
+        with self._session_factory() as session:
+            records = session.query(WatchlistRecord).order_by(WatchlistRecord.ticker.asc()).all()
+            return [
+                WatchlistEntry(ticker=record.ticker, created_at=_as_utc(record.created_at))
+                for record in records
+            ]

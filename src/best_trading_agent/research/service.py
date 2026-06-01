@@ -40,6 +40,9 @@ class ResearchService:
             collected = await self._data_adapter.collect(normalized_ticker, run.id)
             for source in collected.sources:
                 self._repository.save_source(source)
+            if collected.options_snapshot is not None:
+                self._repository.save_options_snapshot(collected.options_snapshot)
+            self._repository.add_watchlist_entry(normalized_ticker)
             report = await self._llm_provider.generate_report(
                 run.id,
                 normalized_ticker,

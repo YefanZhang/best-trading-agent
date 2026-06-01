@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createResearchRun, type ResearchResult } from "./api/client";
 import { ReportView } from "./components/ReportView";
 import { RunForm } from "./components/RunForm";
+import { RunHistory } from "./components/RunHistory";
 
 const panels = ["Ticker command", "Market snapshot", "Catalysts", "Generated memo"];
 
@@ -12,6 +13,7 @@ type AppProps = {
 
 export function App({ createRun = createResearchRun }: AppProps) {
   const [result, setResult] = useState<ResearchResult | null>(null);
+  const [runs, setRuns] = useState<ResearchResult["run"][]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +22,9 @@ export function App({ createRun = createResearchRun }: AppProps) {
     setError(null);
     setResult(null);
     try {
-      setResult(await createRun(ticker));
+      const nextResult = await createRun(ticker);
+      setResult(nextResult);
+      setRuns((existingRuns) => [nextResult.run, ...existingRuns]);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Research request failed");
     } finally {
@@ -67,6 +71,7 @@ export function App({ createRun = createResearchRun }: AppProps) {
             ))}
           </section>
         )}
+        <RunHistory runs={runs} />
       </section>
     </main>
   );

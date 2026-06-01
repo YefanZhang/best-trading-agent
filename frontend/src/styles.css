@@ -204,6 +204,64 @@ h1 {
   color: #34434f;
 }
 
+.source-drawer,
+.run-history {
+  border: 1px solid #d3dbe0;
+  border-radius: 7px;
+  background: #fbfcfc;
+  padding: 16px;
+}
+
+.source-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.source-chip {
+  border: 1px solid #9eb0bc;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #22313a;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.run-history {
+  margin-top: 20px;
+}
+
+.run-history h2 {
+  margin: 0 0 10px;
+  color: #111820;
+  font-size: 1rem;
+}
+
+.run-history p {
+  margin: 0;
+  color: #5d6b75;
+}
+
+.run-history article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid #e0e7eb;
+  padding: 10px 0;
+}
+
+.run-history article:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.run-history span {
+  color: #5d6b75;
+  font-size: 0.88rem;
+}
+
 .panel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

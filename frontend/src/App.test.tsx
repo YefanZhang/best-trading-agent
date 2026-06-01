@@ -66,6 +66,9 @@ describe("App", () => {
     expect(await screen.findByText("Market Snapshot")).toBeInTheDocument();
     expect(screen.getByText("Defined-risk call spread")).toBeInTheDocument();
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
+    expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
+    expect(screen.getByText("src-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Run history")).toBeInTheDocument();
   });
 
   it("clears the previous report when a follow-up research run fails", async () => {

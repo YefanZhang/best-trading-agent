@@ -1,4 +1,5 @@
 import type { Report, ResearchRun } from "../api/client";
+import { SourceDrawer } from "./SourceDrawer";
 
 type ReportViewProps = {
   run: ResearchRun;
@@ -44,6 +45,7 @@ export function ReportView({ run, report }: ReportViewProps) {
           </article>
         ))}
       </section>
+      <SourceDrawer sections={report.sections} />
     </section>
   );
 }

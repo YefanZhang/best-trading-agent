@@ -9,6 +9,7 @@ from best_trading_agent.domain.models import (
     SourceDocument,
     SourceType,
     TradeIdea,
+    WatchlistEntry,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "SourceDocument",
     "SourceType",
     "TradeIdea",
+    "WatchlistEntry",
 ]

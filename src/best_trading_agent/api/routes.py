@@ -1,10 +1,12 @@
+from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from best_trading_agent.data.adapters import FixtureResearchDataAdapter
-from best_trading_agent.domain.models import DataWarning, Report, ResearchRun
+from best_trading_agent.domain.models import DataWarning, Report, ResearchRun, SourceDocument
 from best_trading_agent.llm.providers import DeterministicResearchProvider
 from best_trading_agent.research.service import ResearchService
 from best_trading_agent.storage.repositories import ResearchRepository
@@ -58,6 +60,18 @@ def _report_to_dict(report: Report) -> dict[str, Any]:
     }
 
 
+def _source_to_dict(source: SourceDocument) -> dict[str, Any]:
+    return {
+        "id": source.id,
+        "run_id": source.run_id,
+        "source_type": source.source_type.value,
+        "title": source.title,
+        "url": source.url,
+        "retrieved_at": source.retrieved_at.isoformat(),
+        "payload": source.payload,
+    }
+
+
 @router.post("/runs", status_code=status.HTTP_201_CREATED)
 async def create_run(payload: RunRequest, request: Request) -> dict[str, Any]:
     repository = ResearchRepository(request.app.state.session_factory)
@@ -74,3 +88,41 @@ async def create_run(payload: RunRequest, request: Request) -> dict[str, Any]:
 async def list_runs(request: Request) -> dict[str, Any]:
     repository = ResearchRepository(request.app.state.session_factory)
     return {"runs": [_run_to_dict(run) for run in repository.list_runs()]}
+
+
+@router.get("/runs/{run_id}")
+async def get_run(run_id: str, request: Request) -> dict[str, Any]:
+    repository = ResearchRepository(request.app.state.session_factory)
+    run = repository.get_run(run_id)
+    report = repository.get_report_for_run(run_id)
+    if run is None or report is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return {"run": _run_to_dict(run), "report": _report_to_dict(report)}
+
+
+@router.get("/runs/{run_id}/sources")
+async def list_run_sources(run_id: str, request: Request) -> dict[str, Any]:
+    repository = ResearchRepository(request.app.state.session_factory)
+    return {"sources": [_source_to_dict(source) for source in repository.list_sources(run_id)]}
+
+
+@router.get("/sources/{source_id}")
+async def get_source(source_id: str, request: Request) -> dict[str, Any]:
+    repository = ResearchRepository(request.app.state.session_factory)
+    source = repository.get_source(source_id)
+    if source is None:
+        raise HTTPException(status_code=404, detail="Source not found")
+    return {"source": _source_to_dict(source)}
+
+
+@router.get("/runs/{run_id}/events")
+async def run_events(run_id: str, request: Request) -> StreamingResponse:
+    repository = ResearchRepository(request.app.state.session_factory)
+    run = repository.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    async def stream() -> AsyncIterator[str]:
+        yield f"event: status\ndata: {run.status.value}\n\n"
+
+    return StreamingResponse(stream(), media_type="text/event-stream")
