@@ -1,11 +1,13 @@
 from datetime import UTC, datetime
 from pathlib import Path
-from threading import Thread
-from time import sleep
+from threading import Event, Thread
+from typing import Any
 
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
+from best_trading_agent.api import routes
 from best_trading_agent.api.main import create_app
 from best_trading_agent.cli import app as cli_app
 from best_trading_agent.domain.models import ResearchRun, RunStatus
@@ -28,7 +30,9 @@ def test_api_exposes_history_sources_and_sse(tmp_path: Path) -> None:
     assert "completed_with_warnings" in events.text
 
 
-def test_sse_status_stream_observes_later_terminal_status(tmp_path: Path) -> None:
+def test_sse_status_stream_observes_later_terminal_status(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+) -> None:
     client = TestClient(create_app(f"sqlite+pysqlite:///{tmp_path / 'stream.db'}"))
     repository = ResearchRepository(client.app.state.session_factory)
     run = ResearchRun(
@@ -38,9 +42,25 @@ def test_sse_status_stream_observes_later_terminal_status(tmp_path: Path) -> Non
         status=RunStatus.RUNNING,
     )
     repository.save_run(run)
+    running_observed = Event()
+
+    class ObservedRunRepository:
+        def __init__(self, session_factory: Any) -> None:
+            self._repository = ResearchRepository(session_factory)
+            self._get_run_calls = 0
+
+        def get_run(self, run_id: str) -> ResearchRun | None:
+            current_run = self._repository.get_run(run_id)
+            self._get_run_calls += 1
+            if self._get_run_calls > 1 and current_run is not None:
+                if current_run.status == RunStatus.RUNNING:
+                    running_observed.set()
+            return current_run
+
+    monkeypatch.setattr(routes, "ResearchRepository", ObservedRunRepository)
 
     def complete_run() -> None:
-        sleep(0.03)
+        assert running_observed.wait(timeout=1)
         repository.update_run_status(run.id, RunStatus.COMPLETED)
 
     updater = Thread(target=complete_run)
