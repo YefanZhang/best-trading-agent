@@ -9,6 +9,30 @@ afterEach(() => {
 });
 
 describe("App", () => {
+  it("keeps a persistent live status region and updates it during a run", async () => {
+    const user = userEvent.setup();
+    const createRun = vi.fn(
+      () =>
+        new Promise<never>(() => {
+          // Keep the request pending so the loading state can be asserted.
+        }),
+    );
+
+    render(<App createRun={createRun} />);
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveAttribute("aria-atomic", "true");
+    expect(status).toHaveTextContent("");
+
+    await user.click(screen.getByRole("button", { name: "Start research" }));
+
+    expect(status).toHaveTextContent("Running research...");
+    expect(
+      screen.getAllByText("Running research...").find((element) => element !== status),
+    ).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("runs research and renders report with separated trade ideas", async () => {
     const user = userEvent.setup();
     const createRun = vi.fn().mockResolvedValue({

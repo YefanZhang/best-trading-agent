@@ -47,8 +47,11 @@ export function App({ createRun = createResearchRun }: AppProps) {
           </div>
           <RunForm disabled={isRunning} onSubmit={handleRun} />
         </header>
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {isRunning ? "Running research..." : ""}
+        </p>
         {isRunning ? (
-          <p className="status-line" role="status" aria-live="polite">
+          <p className="status-line" aria-hidden="true">
             Running research...
           </p>
         ) : null}
