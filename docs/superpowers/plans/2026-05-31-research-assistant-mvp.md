@@ -87,9 +87,6 @@ dev = [
   "ruff>=0.6.2",
 ]
 
-[project.scripts]
-best-trading-agent = "best_trading_agent.cli:app"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -129,9 +126,10 @@ Create `/Users/yefanzhang/workplace/best-trading-agent/package.json`:
   "name": "best-trading-agent-workspace",
   "private": true,
   "scripts": {
-    "test": "npm --prefix frontend test",
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build"
+    "test": "if [ -f frontend/package.json ]; then npm --prefix frontend test; else echo \"frontend/package.json not found; skipping frontend test\"; fi",
+    "dev": "if [ -f frontend/package.json ]; then npm --prefix frontend run dev; else echo \"frontend/package.json not found; skipping frontend dev\"; fi",
+    "build": "if [ -f frontend/package.json ]; then npm --prefix frontend run build; else echo \"frontend/package.json not found; skipping frontend build\"; fi",
+    "typecheck": "if [ -f frontend/package.json ]; then npm --prefix frontend run typecheck; else echo \"frontend/package.json not found; skipping frontend typecheck\"; fi"
   }
 }
 ```
@@ -147,20 +145,32 @@ install:
 
 test:
 	uv run pytest
-	npm --prefix frontend test -- --run
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend test -- --run; \
+	else \
+		echo "frontend/package.json not found; skipping frontend test"; \
+	fi
 
 lint:
 	uv run ruff check .
 
 typecheck:
 	uv run mypy src
-	npm --prefix frontend run typecheck
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend run typecheck; \
+	else \
+		echo "frontend/package.json not found; skipping frontend typecheck"; \
+	fi
 
 backend:
-	uv run uvicorn best_trading_agent.api.main:create_app --factory --reload
+	@echo "Backend available after API scaffolding in Task 6"
 
 frontend:
-	npm --prefix frontend run dev
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend run dev; \
+	else \
+		echo "frontend/package.json not found; skipping frontend dev"; \
+	fi
 ```
 
 Create `/Users/yefanzhang/workplace/best-trading-agent/README.md`:
@@ -1132,6 +1142,7 @@ git commit -m "feat: orchestrate research runs"
 ## Task 6: FastAPI And CLI
 
 **Files:**
+- Modify: `/Users/yefanzhang/workplace/best-trading-agent/pyproject.toml`
 - Create: `/Users/yefanzhang/workplace/best-trading-agent/src/best_trading_agent/api/__init__.py`
 - Create: `/Users/yefanzhang/workplace/best-trading-agent/src/best_trading_agent/api/main.py`
 - Create: `/Users/yefanzhang/workplace/best-trading-agent/src/best_trading_agent/api/routes.py`
@@ -1179,6 +1190,13 @@ def test_cli_research_command_outputs_run_summary(tmp_path: Path) -> None:
 ```
 
 - [ ] **Step 2: Implement FastAPI routes**
+
+Add the CLI entry point to `/Users/yefanzhang/workplace/best-trading-agent/pyproject.toml` immediately before `[build-system]`:
+
+```toml
+[project.scripts]
+best-trading-agent = "best_trading_agent.cli:app"
+```
 
 Create `/Users/yefanzhang/workplace/best-trading-agent/src/best_trading_agent/api/__init__.py`:
 
