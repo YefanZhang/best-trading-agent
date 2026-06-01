@@ -1,0 +1,162 @@
+:root {
+  color: #202733;
+  background: #eef1f3;
+  font-family:
+    "Aptos", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: #172027;
+  color: #f4f7f8;
+  padding: 22px;
+  border-right: 1px solid #0d1318;
+}
+
+.brand {
+  font-size: 0.95rem;
+  font-weight: 750;
+  margin-bottom: 30px;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 8px;
+  color: #c7d0d6;
+  font-size: 0.92rem;
+}
+
+.sidebar a {
+  border-radius: 5px;
+  padding: 8px 9px;
+}
+
+.sidebar a:hover {
+  background: #22313a;
+  color: #ffffff;
+}
+
+.workspace {
+  min-width: 0;
+  padding: 28px;
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: #5d6b75;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #111820;
+  font-size: 1.85rem;
+  line-height: 1.08;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px solid #0a5b52;
+  border-radius: 6px;
+  padding: 9px 13px;
+  color: #ffffff;
+  background: #0e6f65;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.primary-button:hover {
+  background: #0a5b52;
+}
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.panel {
+  min-height: 132px;
+  border: 1px solid #d3dbe0;
+  border-radius: 7px;
+  background: #fbfcfc;
+  padding: 16px;
+  color: #1a222b;
+  font-weight: 750;
+  box-shadow: inset 0 3px 0 #e6ebee;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 800px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    padding: 15px;
+  }
+
+  .sidebar nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sidebar a {
+    text-align: center;
+  }
+
+  .workspace {
+    padding: 18px;
+  }
+
+  .workspace-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

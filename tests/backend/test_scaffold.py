@@ -20,31 +20,20 @@ def test_console_script_waits_for_cli_scaffold() -> None:
     assert pyproject["project"]["scripts"]["best-trading-agent"] == "best_trading_agent.cli:app"
 
 
-def test_root_npm_scripts_skip_frontend_until_scaffolded() -> None:
+def test_root_npm_scripts_delegate_to_frontend_after_scaffold() -> None:
     package_json = json.loads((PROJECT_ROOT / "package.json").read_text())
 
-    assert not (PROJECT_ROOT / "frontend" / "package.json").exists()
+    assert (PROJECT_ROOT / "frontend" / "package.json").exists()
     assert set(package_json["scripts"]) >= {"test", "dev", "build", "typecheck"}
-    for script in ("test", "dev", "build", "typecheck"):
-        result = subprocess.run(
-            ["npm", "run", script],
-            cwd=PROJECT_ROOT,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+    assert "npm --prefix frontend test -- --run" in package_json["scripts"]["test"]
 
-        assert result.returncode == 0
-        assert "frontend/package.json not found" in result.stdout
-
-
-def test_make_targets_skip_missing_later_scaffolds() -> None:
-    for target, expected_output in (
-        ("backend", "Backend available after API scaffolding"),
-        ("frontend", "frontend/package.json not found"),
+    for command, expected_output in (
+        (["npm", "run", "test", "--", "--run"], "vitest --run"),
+        (["npm", "run", "build"], "vite build"),
+        (["npm", "run", "typecheck"], "tsc -b"),
     ):
         result = subprocess.run(
-            ["make", target],
+            command,
             cwd=PROJECT_ROOT,
             check=False,
             capture_output=True,
@@ -53,3 +42,21 @@ def test_make_targets_skip_missing_later_scaffolds() -> None:
 
         assert result.returncode == 0
         assert expected_output in result.stdout
+
+
+def test_make_targets_reflect_frontend_scaffold_without_starting_server() -> None:
+    makefile = (PROJECT_ROOT / "Makefile").read_text()
+
+    backend_result = subprocess.run(
+        ["make", "backend"],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert backend_result.returncode == 0
+    assert "Backend available after API scaffolding" in backend_result.stdout
+    assert "npm --prefix frontend test -- --run" in makefile
+    assert "npm --prefix frontend run typecheck" in makefile
+    assert "npm --prefix frontend run dev" in makefile
