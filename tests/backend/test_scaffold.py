@@ -17,7 +17,7 @@ def test_package_imports() -> None:
 def test_console_script_waits_for_cli_scaffold() -> None:
     pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())
 
-    assert "scripts" not in pyproject["project"]
+    assert pyproject["project"]["scripts"]["best-trading-agent"] == "best_trading_agent.cli:app"
 
 
 def test_root_npm_scripts_skip_frontend_until_scaffolded() -> None:
