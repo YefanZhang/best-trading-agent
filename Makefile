@@ -3,6 +3,9 @@
 install:
 	uv sync --extra dev
 	npm install
+	@if [ -f frontend/package.json ]; then \
+		npm --prefix frontend install; \
+	fi
 
 test:
 	uv run pytest
