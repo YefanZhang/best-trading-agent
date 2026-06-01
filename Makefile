@@ -2,9 +2,8 @@
 
 install:
 	uv sync --extra dev
-	npm install
 	@if [ -f frontend/package.json ]; then \
-		npm --prefix frontend install; \
+		npm --prefix frontend ci; \
 	fi
 
 test:

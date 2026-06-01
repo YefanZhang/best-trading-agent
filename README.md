@@ -6,8 +6,7 @@ Local-first research assistant for US equities and listed options.
 
 ```bash
 uv sync --extra dev
-npm install
-npm --prefix frontend install
+npm --prefix frontend ci
 uv run pytest
 ```
 
