@@ -18,6 +18,7 @@ export function App({ createRun = createResearchRun }: AppProps) {
   async function handleRun(ticker: string) {
     setIsRunning(true);
     setError(null);
+    setResult(null);
     try {
       setResult(await createRun(ticker));
     } catch (error) {
@@ -46,7 +47,11 @@ export function App({ createRun = createResearchRun }: AppProps) {
           </div>
           <RunForm disabled={isRunning} onSubmit={handleRun} />
         </header>
-        {isRunning ? <p className="status-line">Running research...</p> : null}
+        {isRunning ? (
+          <p className="status-line" role="status" aria-live="polite">
+            Running research...
+          </p>
+        ) : null}
         {error ? <p role="alert">{error}</p> : null}
         {result ? (
           <ReportView report={result.report} run={result.run} />
