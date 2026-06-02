@@ -128,6 +128,7 @@ async def test_fixture_adapter_returns_sources_options_and_warning() -> None:
 async def test_yfinance_adapter_maps_market_options_and_news_sources() -> None:
     adapter = YFinanceResearchDataAdapter(
         sec_fetch_json=fake_sec_json,
+        sec_user_agent="best-trading-agent/0.1 tests@example.com",
         ticker_factory=FakeYFinanceTicker,
     )
 
@@ -148,6 +149,26 @@ async def test_yfinance_adapter_maps_market_options_and_news_sources() -> None:
     ]
     assert result.options_snapshot.contracts[0].symbol == "NVDA260619C00130000"
     assert result.warnings == []
+
+
+@pytest.mark.asyncio
+async def test_yfinance_adapter_skips_sec_without_configured_user_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("BEST_TRADING_AGENT_SEC_USER_AGENT", raising=False)
+
+    def fail_sec_fetch(url: str, user_agent: str) -> dict[str, object]:
+        raise AssertionError(f"SEC fetch should be skipped, got {url} with {user_agent}")
+
+    adapter = YFinanceResearchDataAdapter(
+        sec_fetch_json=fail_sec_fetch,
+        ticker_factory=FakeYFinanceTicker,
+    )
+
+    result = await adapter.collect("nvda", run_id="run-live")
+
+    assert "sec" not in {source.source_type.value for source in result.sources}
+    assert result.warnings[-1].source == "sec"
+    assert "BEST_TRADING_AGENT_SEC_USER_AGENT" in result.warnings[-1].message
+    assert "contact email" in result.warnings[-1].message
 
 
 def test_build_research_data_adapter_selects_fixture_and_live_modes() -> None:
@@ -187,6 +208,7 @@ async def test_deterministic_provider_generates_evidence_and_trade_idea() -> Non
 async def test_deterministic_provider_does_not_label_live_sources_as_fixture() -> None:
     adapter = YFinanceResearchDataAdapter(
         sec_fetch_json=fake_sec_json,
+        sec_user_agent="best-trading-agent/0.1 tests@example.com",
         ticker_factory=FakeYFinanceTicker,
     )
     provider = DeterministicResearchProvider()

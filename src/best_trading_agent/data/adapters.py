@@ -107,11 +107,9 @@ class YFinanceResearchDataAdapter:
             ticker_factory = yf.Ticker
         self._ticker_factory = ticker_factory
         self._sec_fetch_json = sec_fetch_json or _fetch_json
-        self._sec_user_agent: str = (
-            sec_user_agent
-            or os.getenv("BEST_TRADING_AGENT_SEC_USER_AGENT")
-            or "best-trading-agent/0.1 local-research-tool"
-        )
+        self._sec_user_agent = (
+            sec_user_agent or os.getenv("BEST_TRADING_AGENT_SEC_USER_AGENT") or ""
+        ).strip()
 
     async def collect(self, ticker: str, run_id: str) -> CollectedResearchData:
         upper_ticker = ticker.upper().strip()
@@ -257,6 +255,18 @@ class YFinanceResearchDataAdapter:
         retrieved_at: datetime,
         warnings: list[DataWarning],
     ) -> SourceDocument | None:
+        if "@" not in self._sec_user_agent:
+            warnings.append(
+                DataWarning(
+                    source="sec",
+                    message=(
+                        "SEC fetch skipped: set BEST_TRADING_AGENT_SEC_USER_AGENT "
+                        "to an identifying user agent with a contact email."
+                    ),
+                )
+            )
+            return None
+
         try:
             ticker_map = self._sec_fetch_json(
                 "https://www.sec.gov/files/company_tickers.json",
