@@ -27,4 +27,6 @@ def test_readme_documents_mvp_setup_and_usage() -> None:
     assert "npm --prefix frontend ci" in readme
     assert "uv run best-trading-agent research NVDA" in readme
     assert "uv run best-trading-agent runs-list" in readme
+    assert "BEST_TRADING_AGENT_SEC_USER_AGENT" in readme
+    assert "SEC company submissions" in readme
     assert "does not place trades" in readme

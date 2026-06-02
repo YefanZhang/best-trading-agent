@@ -33,11 +33,57 @@ function formatPayload(payload: SourceDocument["payload"]): string {
   return JSON.stringify(payload, null, 2);
 }
 
+type SourceBadge = {
+  providerLabel: string;
+  statusClass: "fixture" | "live" | "pending";
+  statusLabel: string;
+};
+
+function payloadRecord(source: SourceDocument | null | undefined): Record<string, SourceDocument["payload"]> | null {
+  if (!source || typeof source.payload !== "object" || source.payload === null || Array.isArray(source.payload)) {
+    return null;
+  }
+  return source.payload as Record<string, SourceDocument["payload"]>;
+}
+
+function sourceBadge(source: SourceDocument | null | undefined): SourceBadge {
+  if (!source) {
+    return {
+      providerLabel: "Pending",
+      statusClass: "pending",
+      statusLabel: "pending",
+    };
+  }
+
+  const provider = payloadRecord(source)?.provider;
+  if (provider === "yfinance") {
+    return {
+      providerLabel: "Yahoo Finance",
+      statusClass: "live",
+      statusLabel: "live",
+    };
+  }
+  if (provider === "sec") {
+    return {
+      providerLabel: "SEC",
+      statusClass: "live",
+      statusLabel: "live",
+    };
+  }
+  return {
+    providerLabel: "Fixture",
+    statusClass: "fixture",
+    statusLabel: "fixture",
+  };
+}
+
 export function SourceDrawer({ getSource, listRunSources, report }: SourceDrawerProps) {
   const [runSources, setRunSources] = useState<SourceDocument[]>([]);
   const sourceReferences = useMemo(() => collectSourceReferences(report, runSources), [report, runSources]);
+  const runSourcesById = useMemo(() => new Map(runSources.map((runSource) => [runSource.id, runSource])), [runSources]);
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [source, setSource] = useState<SourceDocument | null>(null);
+  const selectedSourceBadge = sourceBadge(source);
   const [isLoadingSource, setIsLoadingSource] = useState(false);
   const [isLoadingRunSources, setIsLoadingRunSources] = useState(false);
   const [sourceError, setSourceError] = useState<string | null>(null);
@@ -100,18 +146,23 @@ export function SourceDrawer({ getSource, listRunSources, report }: SourceDrawer
     <aside className="source-drawer" aria-label="Source drawer">
       <h2>Sources</h2>
       <div className="source-chip-list">
-        {sourceReferences.map((sourceReference) => (
-          <button
-            className="source-chip"
-            key={sourceReference.id}
-            onClick={() => void handleSelectSource(sourceReference.id)}
-            type="button"
-          >
-            <span>{sourceReference.id}</span>
-            {sourceReference.count > 1 ? <span>{sourceReference.count} references</span> : null}
-            {sourceReference.count === 0 ? <span>uncited</span> : null}
-          </button>
-        ))}
+        {sourceReferences.map((sourceReference) => {
+          const badge = sourceBadge(runSourcesById.get(sourceReference.id));
+          return (
+            <button
+              className="source-chip"
+              key={sourceReference.id}
+              onClick={() => void handleSelectSource(sourceReference.id)}
+              type="button"
+            >
+              <span>{sourceReference.id}</span>
+              <span className={`source-provider-badge ${badge.statusClass}`}>{badge.providerLabel}</span>
+              <span className={`source-status-badge ${badge.statusClass}`}>{badge.statusLabel}</span>
+              {sourceReference.count > 1 ? <span>{sourceReference.count} references</span> : null}
+              {sourceReference.count === 0 ? <span>uncited</span> : null}
+            </button>
+          );
+        })}
       </div>
       {isLoadingRunSources ? <p className="source-status">Loading complete source list...</p> : null}
       {isLoadingSource ? (
@@ -124,6 +175,22 @@ export function SourceDrawer({ getSource, listRunSources, report }: SourceDrawer
         <article className="source-detail" aria-label="Source detail">
           <h3>{source.title}</h3>
           <dl>
+            <div>
+              <dt>Provider</dt>
+              <dd>
+                <span className={`source-provider-badge ${selectedSourceBadge.statusClass}`}>
+                  {selectedSourceBadge.providerLabel}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>
+                <span className={`source-status-badge ${selectedSourceBadge.statusClass}`}>
+                  {selectedSourceBadge.statusLabel}
+                </span>
+              </dd>
+            </div>
             <div>
               <dt>Type</dt>
               <dd>{source.source_type}</dd>

@@ -1,6 +1,10 @@
+import json
+import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Protocol
+from urllib.request import Request, urlopen
 
 from best_trading_agent.domain.models import (
     DataWarning,
@@ -91,12 +95,23 @@ class FixtureResearchDataAdapter:
 
 
 class YFinanceResearchDataAdapter:
-    def __init__(self, ticker_factory: Any | None = None) -> None:
+    def __init__(
+        self,
+        ticker_factory: Any | None = None,
+        sec_fetch_json: Callable[[str, str], dict[str, Any]] | None = None,
+        sec_user_agent: str | None = None,
+    ) -> None:
         if ticker_factory is None:
             import yfinance as yf  # type: ignore[import-untyped]
 
             ticker_factory = yf.Ticker
         self._ticker_factory = ticker_factory
+        self._sec_fetch_json = sec_fetch_json or _fetch_json
+        self._sec_user_agent: str = (
+            sec_user_agent
+            or os.getenv("BEST_TRADING_AGENT_SEC_USER_AGENT")
+            or "best-trading-agent/0.1 local-research-tool"
+        )
 
     async def collect(self, ticker: str, run_id: str) -> CollectedResearchData:
         upper_ticker = ticker.upper().strip()
@@ -135,6 +150,7 @@ class YFinanceResearchDataAdapter:
                     url=f"https://finance.yahoo.com/quote/{upper_ticker}/options",
                     retrieved_at=retrieved_at,
                     payload={
+                        "provider": "yfinance",
                         "expirations": [
                             contract.expiration for contract in options_snapshot.contracts
                         ],
@@ -153,13 +169,17 @@ class YFinanceResearchDataAdapter:
                     title=f"{upper_ticker} Yahoo Finance news",
                     url=f"https://finance.yahoo.com/quote/{upper_ticker}/news",
                     retrieved_at=retrieved_at,
-                    payload={"items": news_items},
+                    payload={"provider": "yfinance", "items": news_items},
                 )
             )
         else:
             warnings.append(
                 DataWarning(source="news", message="Yahoo Finance returned no news items")
             )
+
+        sec_source = self._sec_source(upper_ticker, run_id, retrieved_at, warnings)
+        if sec_source is not None:
+            sources.append(sec_source)
 
         return CollectedResearchData(
             sources=sources,
@@ -229,6 +249,50 @@ class YFinanceResearchDataAdapter:
             retrieved_at=retrieved_at,
             contracts=contracts,
         )
+
+    def _sec_source(
+        self,
+        ticker: str,
+        run_id: str,
+        retrieved_at: datetime,
+        warnings: list[DataWarning],
+    ) -> SourceDocument | None:
+        try:
+            ticker_map = self._sec_fetch_json(
+                "https://www.sec.gov/files/company_tickers.json",
+                self._sec_user_agent,
+            )
+            company = _find_sec_company(ticker_map, ticker)
+            if company is None:
+                warnings.append(
+                    DataWarning(source="sec", message=f"SEC CIK lookup failed for {ticker}")
+                )
+                return None
+
+            cik_int = int(company["cik_str"])
+            padded_cik = f"{cik_int:010d}"
+            submissions_url = f"https://data.sec.gov/submissions/CIK{padded_cik}.json"
+            submissions = self._sec_fetch_json(submissions_url, self._sec_user_agent)
+            latest_filings = _latest_sec_filings(submissions)
+            return SourceDocument(
+                id=f"{run_id}-sec",
+                run_id=run_id,
+                source_type=SourceType.SEC,
+                title=f"{ticker} SEC recent filings",
+                url=submissions_url,
+                retrieved_at=retrieved_at,
+                payload={
+                    "provider": "sec",
+                    "cik": padded_cik,
+                    "company_name": submissions.get("name") or company.get("title"),
+                    "latest_filings": latest_filings,
+                },
+            )
+        except Exception as error:
+            warnings.append(
+                DataWarning(source="sec", message=f"SEC submissions fetch failed: {error}")
+            )
+            return None
 
     def _option_contracts(
         self,
@@ -329,3 +393,50 @@ def _int_or_none(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _fetch_json(url: str, user_agent: str) -> dict[str, Any]:
+    request = Request(url, headers={"User-Agent": user_agent})
+    with urlopen(request, timeout=15) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Expected JSON object from {url}")
+    return payload
+
+
+def _find_sec_company(ticker_map: dict[str, Any], ticker: str) -> dict[str, Any] | None:
+    for value in ticker_map.values():
+        company = _as_mapping(value)
+        if str(company.get("ticker", "")).upper() == ticker:
+            return company
+    return None
+
+
+def _latest_sec_filings(submissions: dict[str, Any]) -> list[dict[str, Any]]:
+    recent = _as_mapping(_as_mapping(submissions.get("filings", {})).get("recent", {}))
+    forms = list(recent.get("form", []) or [])
+    filing_dates = list(recent.get("filingDate", []) or [])
+    accession_numbers = list(recent.get("accessionNumber", []) or [])
+    primary_documents = list(recent.get("primaryDocument", []) or [])
+    filings: list[dict[str, Any]] = []
+    for index, form in enumerate(forms):
+        form_text = str(form)
+        if form_text not in {"10-K", "10-Q", "8-K"}:
+            continue
+        filings.append(
+            {
+                "form": form_text,
+                "filing_date": _at(filing_dates, index),
+                "accession_number": _at(accession_numbers, index),
+                "primary_document": _at(primary_documents, index),
+            }
+        )
+        if len(filings) == 5:
+            break
+    return filings
+
+
+def _at(values: list[Any], index: int) -> Any:
+    if index >= len(values):
+        return None
+    return values[index]

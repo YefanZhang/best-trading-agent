@@ -5,12 +5,13 @@ Local-first research assistant for US equities and listed options.
 ## What works in the MVP
 
 - Deterministic fixture-backed equity and options research run.
+- Optional live free/public data mode for Yahoo Finance market/options/news and SEC company submissions.
 - SQLite persistence for runs, sources, reports, trade ideas, and warnings.
 - FastAPI endpoint for starting research runs.
 - Typer CLI for starting research runs and listing saved runs.
 - React/TypeScript research workbench that calls the API.
 
-The current data adapter is a deterministic development fixture. Live free/public adapters can be added behind the same adapter interface.
+The default data adapter is a deterministic development fixture so tests and demos stay fast. Live mode is available behind the same adapter interface when you want current public data.
 
 ## Setup
 
@@ -45,20 +46,25 @@ uv run best-trading-agent research NVDA
 uv run best-trading-agent runs-list
 ```
 
-## Live data mode
+## Live Data Mode
 
 The default data mode is `fixture`, which returns deterministic local data for fast tests.
-To fetch live free/public Yahoo Finance market, options, and news data, start the backend with:
+To fetch live free/public Yahoo Finance market/options/news data plus SEC company submissions, start the backend with:
 
 ```bash
-BEST_TRADING_AGENT_DATA_MODE=live uv run uvicorn best_trading_agent.api.main:create_app --factory --reload
+BEST_TRADING_AGENT_DATA_MODE=live \
+BEST_TRADING_AGENT_SEC_USER_AGENT="best-trading-agent/0.1 your-email@example.com" \
+uv run uvicorn best_trading_agent.api.main:create_app --factory --reload
 ```
 
 Or run the CLI with:
 
 ```bash
+BEST_TRADING_AGENT_SEC_USER_AGENT="best-trading-agent/0.1 your-email@example.com" \
 uv run best-trading-agent --data-mode live research NVDA
 ```
+
+Set `BEST_TRADING_AGENT_SEC_USER_AGENT` to an identifying value with a contact email for SEC public data requests. Without an email-style user-agent, `data.sec.gov` may return `403 Forbidden`.
 
 ## Scope boundaries
 

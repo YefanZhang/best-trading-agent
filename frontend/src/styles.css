@@ -275,13 +275,52 @@ h1 {
 
 .source-chip {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+  max-width: 100%;
 }
 
 .source-chip span + span {
   color: #5d6b75;
   font-size: 0.75rem;
+}
+
+.source-provider-badge,
+.source-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border: 1px solid #cfd8dd;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #2d3a43;
+  background: #eef3f2;
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.source-provider-badge.live,
+.source-status-badge.live {
+  border-color: #8cb8ae;
+  color: #0a5b52;
+  background: #e8f4f1;
+}
+
+.source-provider-badge.fixture,
+.source-status-badge.fixture {
+  border-color: #d3d2c4;
+  color: #5f5438;
+  background: #f4f1e7;
+}
+
+.source-provider-badge.pending,
+.source-status-badge.pending {
+  border-color: #ccd4da;
+  color: #5d6b75;
+  background: #f2f5f7;
 }
 
 .source-status {

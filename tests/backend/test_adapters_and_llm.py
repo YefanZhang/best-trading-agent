@@ -80,6 +80,33 @@ class FakeYFinanceTicker:
         )
 
 
+def fake_sec_json(url: str, user_agent: str) -> dict[str, object]:
+    assert "best-trading-agent" in user_agent
+    if url == "https://www.sec.gov/files/company_tickers.json":
+        return {
+            "0": {"cik_str": 1045810, "ticker": "NVDA", "title": "NVIDIA CORP"},
+            "1": {"cik_str": 320193, "ticker": "AAPL", "title": "Apple Inc."},
+        }
+    if url == "https://data.sec.gov/submissions/CIK0001045810.json":
+        return {
+            "cik": "0001045810",
+            "name": "NVIDIA CORP",
+            "filings": {
+                "recent": {
+                    "form": ["10-Q", "8-K", "4"],
+                    "filingDate": ["2026-05-28", "2026-05-21", "2026-05-20"],
+                    "accessionNumber": [
+                        "0001045810-26-000123",
+                        "0001045810-26-000111",
+                        "0001045810-26-000100",
+                    ],
+                    "primaryDocument": ["nvda-20260528.htm", "nvda-8k.htm", "xslF345X05/doc4.xml"],
+                }
+            },
+        }
+    raise AssertionError(f"Unexpected SEC URL: {url}")
+
+
 @pytest.mark.asyncio
 async def test_fixture_adapter_returns_sources_options_and_warning() -> None:
     adapter = FixtureResearchDataAdapter()
@@ -99,7 +126,10 @@ async def test_fixture_adapter_returns_sources_options_and_warning() -> None:
 
 @pytest.mark.asyncio
 async def test_yfinance_adapter_maps_market_options_and_news_sources() -> None:
-    adapter = YFinanceResearchDataAdapter(ticker_factory=FakeYFinanceTicker)
+    adapter = YFinanceResearchDataAdapter(
+        sec_fetch_json=fake_sec_json,
+        ticker_factory=FakeYFinanceTicker,
+    )
 
     result = await adapter.collect("nvda", run_id="run-live")
 
@@ -109,6 +139,8 @@ async def test_yfinance_adapter_maps_market_options_and_news_sources() -> None:
     assert sources_by_type["news"].payload["items"][0]["title"] == (
         "Nvidia shares move after analyst note"
     )
+    assert sources_by_type["sec"].payload["provider"] == "sec"
+    assert sources_by_type["sec"].payload["latest_filings"][0]["form"] == "10-Q"
     assert result.options_snapshot is not None
     assert [contract.option_type for contract in result.options_snapshot.contracts] == [
         "call",
@@ -144,11 +176,19 @@ async def test_deterministic_provider_generates_evidence_and_trade_idea() -> Non
     assert report.sections[0].title == "Market Snapshot"
     assert report.trade_ideas[0].structure == "Defined-risk call spread"
     assert report.warnings == data.warnings
+    report_text = "\n".join(section.body for section in report.sections)
+    assert "Latest SEC filing: 10-Q" in report_text
+    assert "Analysts discuss AI demand outlook." in report_text
+    assert "SEC source returned company metadata" not in report_text
+    assert "News source returned no items" not in report_text
 
 
 @pytest.mark.asyncio
 async def test_deterministic_provider_does_not_label_live_sources_as_fixture() -> None:
-    adapter = YFinanceResearchDataAdapter(ticker_factory=FakeYFinanceTicker)
+    adapter = YFinanceResearchDataAdapter(
+        sec_fetch_json=fake_sec_json,
+        ticker_factory=FakeYFinanceTicker,
+    )
     provider = DeterministicResearchProvider()
     data = await adapter.collect("NVDA", run_id="run-live")
 
@@ -167,5 +207,8 @@ async def test_deterministic_provider_does_not_label_live_sources_as_fixture() -
         ]
     )
     assert "fixture" not in report_text.lower()
-    assert "filings" not in report_text.lower()
+    assert "501.25" in report_text
+    assert "NVIDIA Corporation" in report_text
+    assert "Nvidia shares move after analyst note" in report_text
+    assert "10-Q" in report_text
     assert "Yahoo Finance" in report.sections[0].body

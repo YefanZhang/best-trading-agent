@@ -48,7 +48,7 @@ const resultFixture = ({
   },
 });
 
-const sourceFixture = (id: string): SourceDocument => ({
+const sourceFixture = (id: string, overrides: Partial<SourceDocument> = {}): SourceDocument => ({
   id,
   run_id: "run-1",
   source_type: "news",
@@ -56,6 +56,7 @@ const sourceFixture = (id: string): SourceDocument => ({
   url: "https://example.test/source",
   retrieved_at: "2026-06-01T12:00:00Z",
   payload: { headline: "Source headline", scores: [1, 2] },
+  ...overrides,
 });
 
 describe("App", () => {
@@ -188,9 +189,18 @@ describe("App", () => {
       }),
     );
     const listRunSources = vi.fn().mockResolvedValue([
-      sourceFixture("src-shared"),
-      sourceFixture("src-section"),
-      sourceFixture("src-trade"),
+      sourceFixture("src-shared", {
+        source_type: "market",
+        payload: { provider: "yfinance", price: 501.25 },
+      }),
+      sourceFixture("src-section", {
+        source_type: "filing",
+        payload: { provider: "sec", form: "10-Q" },
+      }),
+      sourceFixture("src-trade", {
+        source_type: "options",
+        payload: { provider: "yfinance", expiration: "2026-06-19" },
+      }),
       sourceFixture("src-uncited"),
     ]);
 
@@ -199,11 +209,17 @@ describe("App", () => {
     await userEvent.click(screen.getByRole("button", { name: "Start research" }));
 
     const sourceDrawer = await screen.findByLabelText("Source drawer");
-    expect(within(sourceDrawer).getByRole("button", { name: /src-section/i })).toBeInTheDocument();
-    expect(within(sourceDrawer).getByRole("button", { name: /src-trade/i })).toBeInTheDocument();
-    expect(within(sourceDrawer).getByRole("button", { name: /src-shared 2 references/i })).toBeInTheDocument();
+    expect(within(sourceDrawer).getByRole("button", { name: /src-section.*SEC.*live/i })).toBeInTheDocument();
     expect(
-      await within(sourceDrawer).findByRole("button", { name: /src-uncited uncited/i }),
+      within(sourceDrawer).getByRole("button", { name: /src-trade.*Yahoo Finance.*live/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(sourceDrawer).getByRole("button", {
+        name: /src-shared.*Yahoo Finance.*live.*2 references/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await within(sourceDrawer).findByRole("button", { name: /src-uncited.*fixture.*uncited/i }),
     ).toBeInTheDocument();
     expect(listRunSources).toHaveBeenCalledWith("run-1");
   });
