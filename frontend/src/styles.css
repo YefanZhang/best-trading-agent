@@ -243,23 +243,106 @@ h1 {
   color: #5d6b75;
 }
 
-.run-history article {
+.run-history-entry {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   gap: 12px;
+  border: 0;
   border-top: 1px solid #e0e7eb;
   padding: 10px 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.run-history article:first-of-type {
+.run-history-entry:hover {
+  color: #0a5b52;
+}
+
+.run-history-entry:first-of-type {
   border-top: 0;
   padding-top: 0;
 }
 
-.run-history span {
+.run-history-entry span {
   color: #5d6b75;
   font-size: 0.88rem;
+}
+
+.source-chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.source-chip span + span {
+  color: #5d6b75;
+  font-size: 0.75rem;
+}
+
+.source-status {
+  margin: 12px 0 0;
+  color: #5d6b75;
+}
+
+.source-detail {
+  margin-top: 14px;
+  border-top: 1px solid #e0e7eb;
+  padding-top: 14px;
+}
+
+.source-detail h3 {
+  margin: 0 0 10px;
+  color: #162029;
+  font-size: 0.98rem;
+}
+
+.source-detail dl {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.source-detail dl div {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.source-detail dt {
+  color: #5d6b75;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.source-detail dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.source-detail a {
+  color: #0a5b52;
+  text-decoration: underline;
+}
+
+.source-detail pre {
+  max-height: 280px;
+  overflow: auto;
+  margin: 0;
+  border: 1px solid #d3dbe0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 12px;
+  color: #162029;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .panel-grid {

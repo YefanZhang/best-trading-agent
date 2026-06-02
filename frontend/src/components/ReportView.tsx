@@ -1,12 +1,14 @@
-import type { Report, ResearchRun } from "../api/client";
+import type { Report, ResearchRun, SourceDocument } from "../api/client";
 import { SourceDrawer } from "./SourceDrawer";
 
 type ReportViewProps = {
+  getSource: (sourceId: string) => Promise<SourceDocument>;
+  listRunSources: (runId: string) => Promise<SourceDocument[]>;
   run: ResearchRun;
   report: Report;
 };
 
-export function ReportView({ run, report }: ReportViewProps) {
+export function ReportView({ getSource, listRunSources, run, report }: ReportViewProps) {
   return (
     <section className="report-view" aria-label="Research report">
       <div className="status-line">
@@ -45,7 +47,7 @@ export function ReportView({ run, report }: ReportViewProps) {
           </article>
         ))}
       </section>
-      <SourceDrawer sections={report.sections} />
+      <SourceDrawer getSource={getSource} listRunSources={listRunSources} report={report} />
     </section>
   );
 }
