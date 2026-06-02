@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
 from best_trading_agent.api.main import create_app
@@ -23,6 +24,19 @@ def test_create_app_uses_configured_data_adapter_mode(tmp_path: Path) -> None:
     app = create_app(f"sqlite+pysqlite:///{tmp_path / 'api.db'}", data_adapter_mode="live")
 
     assert app.state.data_adapter_mode == "live"
+
+
+def test_create_app_uses_database_url_environment(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+) -> None:
+    database_path = tmp_path / "env-api.db"
+    monkeypatch.setenv("BEST_TRADING_AGENT_DATABASE_URL", f"sqlite+pysqlite:///{database_path}")
+
+    client = TestClient(create_app())
+    response = client.post("/api/runs", json={"ticker": "nvda"})
+
+    assert response.status_code == 201
+    assert database_path.exists()
 
 
 def test_cli_research_command_outputs_run_summary(tmp_path: Path) -> None:

@@ -17,7 +17,9 @@ The default data adapter is a deterministic development fixture so tests and dem
 
 ```bash
 uv sync --extra dev
+npm ci
 npm --prefix frontend ci
+npx playwright install chromium
 ```
 
 ## Test
@@ -25,7 +27,12 @@ npm --prefix frontend ci
 ```bash
 uv run pytest
 npm --prefix frontend test -- --run
+npm run e2e
 ```
+
+GitHub Actions runs backend linting, backend typechecking, backend tests, frontend
+typechecking, frontend tests, frontend build, and Playwright e2e tests on pull
+requests, pushes to `main`, and manual workflow dispatch.
 
 ## Run backend
 

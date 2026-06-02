@@ -152,7 +152,9 @@ async def test_yfinance_adapter_maps_market_options_and_news_sources() -> None:
 
 
 @pytest.mark.asyncio
-async def test_yfinance_adapter_skips_sec_without_configured_user_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_yfinance_adapter_skips_sec_without_configured_user_agent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("BEST_TRADING_AGENT_SEC_USER_AGENT", raising=False)
 
     def fail_sec_fetch(url: str, user_agent: str) -> dict[str, object]:
