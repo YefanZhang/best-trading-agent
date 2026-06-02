@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from best_trading_agent.data.adapters import FixtureResearchDataAdapter
+from best_trading_agent.data.adapters import build_research_data_adapter
 from best_trading_agent.domain.models import (
     DataWarning,
     Report,
@@ -90,7 +90,7 @@ async def create_run(payload: RunRequest, request: Request) -> dict[str, Any]:
     repository = ResearchRepository(request.app.state.session_factory)
     service = ResearchService(
         repository,
-        FixtureResearchDataAdapter(),
+        build_research_data_adapter(request.app.state.data_adapter_mode),
         DeterministicResearchProvider(),
     )
     result = await service.run_research(payload.ticker)

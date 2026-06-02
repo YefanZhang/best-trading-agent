@@ -45,6 +45,21 @@ uv run best-trading-agent research NVDA
 uv run best-trading-agent runs-list
 ```
 
+## Live data mode
+
+The default data mode is `fixture`, which returns deterministic local data for fast tests.
+To fetch live free/public Yahoo Finance market, options, and news data, start the backend with:
+
+```bash
+BEST_TRADING_AGENT_DATA_MODE=live uv run uvicorn best_trading_agent.api.main:create_app --factory --reload
+```
+
+Or run the CLI with:
+
+```bash
+uv run best-trading-agent --data-mode live research NVDA
+```
+
 ## Scope boundaries
 
 This project does not place trades, integrate with brokers, stream live quotes, or provide financial advice.

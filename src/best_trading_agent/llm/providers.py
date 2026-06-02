@@ -32,11 +32,21 @@ class DeterministicResearchProvider:
         warnings: list[DataWarning],
     ) -> Report:
         source_ids = [source.id for source in sources]
+        has_yahoo_sources = any(
+            source.payload.get("provider") == "yfinance" or "Yahoo Finance" in source.title
+            for source in sources
+        )
+        source_label = "Yahoo Finance" if has_yahoo_sources else "fixture"
+        data_risk_note = (
+            "Yahoo Finance data may be delayed, incomplete, or unavailable."
+            if has_yahoo_sources
+            else "Fixture data is not live market data."
+        )
         sections = [
             ReportSection(
                 title="Market Snapshot",
                 body=(
-                    f"{ticker.upper()} fixture snapshot includes price, volume, filings, "
+                    f"{ticker.upper()} {source_label} snapshot includes price, volume, filings, "
                     "catalysts, and options context."
                 ),
                 source_ids=source_ids,
@@ -68,7 +78,7 @@ class DeterministicResearchProvider:
                 risk_notes=[
                     "Can expire worthless.",
                     "Spread caps upside.",
-                    "Fixture data is not live market data.",
+                    data_risk_note,
                 ],
                 source_ids=source_ids,
             )

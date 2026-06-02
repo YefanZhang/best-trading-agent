@@ -19,6 +19,12 @@ def test_api_runs_research_and_returns_report(tmp_path: Path) -> None:
     assert body["report"]["trade_ideas"][0]["structure"] == "Defined-risk call spread"
 
 
+def test_create_app_uses_configured_data_adapter_mode(tmp_path: Path) -> None:
+    app = create_app(f"sqlite+pysqlite:///{tmp_path / 'api.db'}", data_adapter_mode="live")
+
+    assert app.state.data_adapter_mode == "live"
+
+
 def test_cli_research_command_outputs_run_summary(tmp_path: Path) -> None:
     runner = CliRunner()
 

@@ -1,9 +1,10 @@
 import asyncio
+import os
 from typing import Annotated
 
 import typer
 
-from best_trading_agent.data.adapters import FixtureResearchDataAdapter
+from best_trading_agent.data.adapters import build_research_data_adapter
 from best_trading_agent.llm.providers import DeterministicResearchProvider
 from best_trading_agent.research.service import ResearchService
 from best_trading_agent.storage.database import create_session_factory
@@ -30,8 +31,15 @@ def main(
         str,
         typer.Option("--database-url", help="SQLAlchemy database URL."),
     ] = "sqlite+pysqlite:///best-trading-agent.db",
+    data_mode: Annotated[
+        str | None,
+        typer.Option("--data-mode", help="Data adapter mode: fixture or live."),
+    ] = None,
 ) -> None:
-    ctx.obj = {"database_url": database_url}
+    ctx.obj = {
+        "database_url": database_url,
+        "data_mode": data_mode or os.getenv("BEST_TRADING_AGENT_DATA_MODE", "fixture"),
+    }
 
 
 @app.command()
@@ -39,7 +47,7 @@ def research(ctx: typer.Context, ticker: str) -> None:
     repository = _repository(ctx.obj["database_url"])
     service = ResearchService(
         repository,
-        FixtureResearchDataAdapter(),
+        build_research_data_adapter(ctx.obj["data_mode"]),
         DeterministicResearchProvider(),
     )
     result = asyncio.run(service.run_research(ticker))

@@ -9,6 +9,7 @@ dependencies = [
   "sqlalchemy>=2.0.32",
   "typer>=0.12.5",
   "uvicorn>=0.30.6",
+  "yfinance>=0.2.66",
 ]
 
 [project.optional-dependencies]
