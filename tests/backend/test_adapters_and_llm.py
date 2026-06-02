@@ -167,4 +167,5 @@ async def test_deterministic_provider_does_not_label_live_sources_as_fixture() -
         ]
     )
     assert "fixture" not in report_text.lower()
+    assert "filings" not in report_text.lower()
     assert "Yahoo Finance" in report.sections[0].body

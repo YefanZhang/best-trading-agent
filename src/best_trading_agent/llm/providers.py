@@ -37,6 +37,11 @@ class DeterministicResearchProvider:
             for source in sources
         )
         source_label = "Yahoo Finance" if has_yahoo_sources else "fixture"
+        market_context = (
+            "price, volume, news, and options context"
+            if has_yahoo_sources
+            else "price, volume, filings, catalysts, and options context"
+        )
         data_risk_note = (
             "Yahoo Finance data may be delayed, incomplete, or unavailable."
             if has_yahoo_sources
@@ -46,8 +51,7 @@ class DeterministicResearchProvider:
             ReportSection(
                 title="Market Snapshot",
                 body=(
-                    f"{ticker.upper()} {source_label} snapshot includes price, volume, filings, "
-                    "catalysts, and options context."
+                    f"{ticker.upper()} {source_label} snapshot includes {market_context}."
                 ),
                 source_ids=source_ids,
             ),
