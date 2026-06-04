@@ -1,4 +1,5 @@
 import type { Report, ResearchRun, SourceDocument } from "../api/client";
+import { DecisionHeader } from "./DecisionHeader";
 import { SourceDrawer } from "./SourceDrawer";
 
 type ReportViewProps = {
@@ -11,10 +12,7 @@ type ReportViewProps = {
 export function ReportView({ getSource, listRunSources, run, report }: ReportViewProps) {
   return (
     <section className="report-view" aria-label="Research report">
-      <div className="status-line">
-        <strong>{run.ticker}</strong>
-        <span>{run.status}</span>
-      </div>
+      <DecisionHeader run={run} report={report} />
       {report.warnings.length > 0 ? (
         <section className="warning-list" aria-label="Warnings">
           {report.warnings.map((warning) => (
