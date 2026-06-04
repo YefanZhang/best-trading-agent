@@ -162,6 +162,78 @@ h1 {
   gap: 20px;
 }
 
+
+.data-quality-summary {
+  border: 1px solid #cbd6dd;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.data-quality-summary__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.data-quality-summary__header h2 {
+  margin: 0;
+}
+
+.coverage-badge {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.coverage-badge--complete {
+  color: #0a5b52;
+  background: #e4f4ef;
+}
+
+.coverage-badge--warning {
+  color: #8a5400;
+  background: #fff2cf;
+}
+
+.coverage-badge--limited {
+  color: #8a2932;
+  background: #ffe5e8;
+}
+
+.data-quality-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.data-quality-metrics div {
+  border: 1px solid #e0e7eb;
+  border-radius: 7px;
+  padding: 10px;
+  background: #fbfcfc;
+}
+
+.data-quality-metrics dt {
+  margin-bottom: 5px;
+  color: #5d6b75;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.data-quality-metrics dd {
+  margin: 0;
+  color: #111820;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
 .warning-list {
   border: 1px solid #e3a8ae;
   border-radius: 7px;

@@ -20,10 +20,12 @@ const resultFixture = ({
   run = completedRun("run-1", "NVDA"),
   sectionSourceIds = ["src-section"],
   tradeSourceIds = ["src-trade"],
+  reportWarnings = [],
 }: {
   run?: ResearchRun;
   sectionSourceIds?: string[];
   tradeSourceIds?: string[];
+  reportWarnings?: ResearchRun["warnings"];
 } = {}): ResearchResult => ({
   run,
   report: {
@@ -44,7 +46,7 @@ const resultFixture = ({
         source_ids: tradeSourceIds,
       },
     ],
-    warnings: [],
+    warnings: reportWarnings,
   },
 });
 
@@ -129,6 +131,34 @@ describe("App", () => {
     expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
     expect(screen.getByText("src-1")).toBeInTheDocument();
     expect(screen.getByLabelText("Run history")).toBeInTheDocument();
+  });
+
+  it("renders data quality summary with warning coverage and sourced evidence", async () => {
+    const createRun = vi.fn().mockResolvedValue(
+      resultFixture({
+        run: {
+          id: "run-1",
+          ticker: "NVDA",
+          status: "completed_with_warnings",
+          warnings: [{ source: "news", message: "Partial coverage" }],
+        },
+        sectionSourceIds: ["src-1", "src-2"],
+        tradeSourceIds: ["src-2"],
+        reportWarnings: [{ source: "news", message: "Partial coverage" }],
+      }),
+    );
+
+    render(<App createRun={createRun} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Start research" }));
+
+    const dataQuality = await screen.findByLabelText("Data quality");
+    expect(within(dataQuality).getByText("Data quality")).toBeInTheDocument();
+    expect(within(dataQuality).getByText("Evidence sources")).toBeInTheDocument();
+    expect(within(dataQuality).getByText("Coverage warning")).toBeInTheDocument();
+    expect(within(dataQuality).getByText("Warning count")).toBeInTheDocument();
+    expect(within(dataQuality).getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("Partial coverage")).toBeInTheDocument();
   });
 
   it("loads persisted runs on startup and preserves newly created runs without duplicates", async () => {
