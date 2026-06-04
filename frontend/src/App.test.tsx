@@ -126,7 +126,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Start research" }));
 
     expect(await screen.findByText("Market Snapshot")).toBeInTheDocument();
-    expect(screen.getByText("Defined-risk call spread")).toBeInTheDocument();
+    expect(screen.getAllByText("Defined-risk call spread")).toHaveLength(2);
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
     expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
     expect(screen.getByText("src-1")).toBeInTheDocument();
@@ -159,6 +159,45 @@ describe("App", () => {
     expect(within(dataQuality).getByText("Warning count")).toBeInTheDocument();
     expect(within(dataQuality).getByText("2")).toBeInTheDocument();
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
+  it("renders the decision header after research completes", async () => {
+    const user = userEvent.setup();
+    const createRun = vi.fn().mockResolvedValue({
+      run: {
+        id: "run-1",
+        ticker: "TSLA",
+        status: "completed_with_warnings",
+        warnings: [{ source: "filings", message: "Delayed filing data" }],
+      },
+      report: {
+        id: "report-1",
+        run_id: "run-1",
+        sections: [
+          { title: "Market Snapshot", body: "Fixture body", source_ids: ["src-1", "src-2"] },
+        ],
+        trade_ideas: [
+          {
+            structure: "TSLA put spread",
+            thesis: "Defined downside exposure",
+            risk_notes: ["Can expire worthless"],
+            source_ids: ["src-2", "src-3"],
+          },
+        ],
+        warnings: [{ source: "news", message: "Partial news coverage" }],
+      },
+    });
+
+    render(<App createRun={createRun} />);
+
+    await user.click(screen.getByRole("button", { name: "Start research" }));
+
+    const decisionHeader = await screen.findByLabelText("Decision summary");
+    expect(within(decisionHeader).getByText("TSLA")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("TSLA put spread")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("Warnings")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("2")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("Sources")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("3")).toBeInTheDocument();
+    expect(within(decisionHeader).getByText("Structured recommendation pending")).toBeInTheDocument();
   });
 
   it("loads persisted runs on startup and preserves newly created runs without duplicates", async () => {
@@ -204,7 +243,7 @@ describe("App", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Loading saved run...");
     resolveSavedRun(resultFixture({ run }));
     expect(await screen.findByText("MSFT Market Snapshot")).toBeInTheDocument();
-    expect(screen.getByText("MSFT call spread")).toBeInTheDocument();
+    expect(screen.getAllByText("MSFT call spread")).toHaveLength(2);
     expect(getRun).toHaveBeenCalledWith("run-2");
   });
 
@@ -341,7 +380,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Start research" }));
     expect(await screen.findByText("Prior Market Snapshot")).toBeInTheDocument();
-    expect(screen.getByText("Prior call spread")).toBeInTheDocument();
+    expect(screen.getAllByText("Prior call spread")).toHaveLength(2);
 
     await user.click(screen.getByRole("button", { name: "Start research" }));
 
