@@ -147,6 +147,27 @@ describe("App", () => {
     expect(screen.getAllByRole("button", { name: /NVDA completed/i })).toHaveLength(1);
   });
 
+  it("shows persisted run timestamps, warning counts, and missing timestamp fallback", async () => {
+    const persistedRunWithTimestamp: ResearchRun = {
+      ...completedRun("run-1", "NVDA"),
+      created_at: "2026-06-01T12:00:00Z",
+      warnings: [
+        { source: "news", message: "Partial coverage" },
+        { source: "options", message: "Limited option chain" },
+      ],
+    };
+    const persistedRunWithoutTimestamp = completedRun("run-2", "MSFT");
+    const listRuns = vi.fn().mockResolvedValue([persistedRunWithTimestamp, persistedRunWithoutTimestamp]);
+
+    render(<App listRuns={listRuns} />);
+
+    expect(await screen.findByText("Jun 1, 2026, 12:00 PM UTC")).toBeInTheDocument();
+    expect(screen.getByText("2 warnings")).toBeInTheDocument();
+    expect(screen.getByText("No timestamp")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Open analysis for NVDA completed/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /MSFT completed/i })).toBeInTheDocument();
+  });
+
   it("shows an alert when persisted runs fail to load", async () => {
     const listRuns = vi.fn().mockRejectedValue(new Error("Runs unavailable"));
 
