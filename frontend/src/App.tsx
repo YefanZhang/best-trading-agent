@@ -10,11 +10,11 @@ import {
   type ResearchRun,
   type SourceDocument,
 } from "./api/client";
+import { ProfessionalEmptyState } from "./components/ProfessionalEmptyState";
 import { ReportView } from "./components/ReportView";
 import { RunForm } from "./components/RunForm";
 import { RunHistory } from "./components/RunHistory";
 
-const panels = ["Ticker command", "Market snapshot", "Catalysts", "Generated memo"];
 
 type AppProps = {
   createRun?: (ticker: string) => Promise<ResearchResult>;
@@ -139,13 +139,7 @@ export function App({
             run={result.run}
           />
         ) : (
-          <section className="panel-grid" aria-label="Research panels">
-            {panels.map((panel) => (
-              <div className={`panel${panel === "Generated memo" ? " wide" : ""}`} key={panel}>
-                {panel}
-              </div>
-            ))}
-          </section>
+          <ProfessionalEmptyState />
         )}
         <RunHistory onSelectRun={handleSelectRun} runs={runs} />
       </section>
