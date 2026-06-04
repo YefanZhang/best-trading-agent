@@ -131,6 +131,38 @@ describe("App", () => {
     expect(screen.getByLabelText("Run history")).toBeInTheDocument();
   });
 
+  it("renders derived analyst section kind badges and source counts", async () => {
+    const user = userEvent.setup();
+    const createRun = vi.fn().mockResolvedValue({
+      run: completedRun("run-1", "NVDA"),
+      report: {
+        id: "report-1",
+        run_id: "run-1",
+        sections: [
+          { title: "Market Snapshot", body: "Market body", source_ids: ["src-market"] },
+          { title: "Risk Warning", body: "Risk body", source_ids: ["src-risk-1", "src-risk-2"] },
+          { title: "Options IV Volatility", body: "Options body", source_ids: [] },
+        ],
+        trade_ideas: [],
+        warnings: [],
+      },
+    });
+
+    render(<App createRun={createRun} listRunSources={vi.fn().mockResolvedValue([])} />);
+
+    await user.click(screen.getByRole("button", { name: "Start research" }));
+
+    const evidenceMemo = await screen.findByRole("heading", { name: "Evidence memo" });
+    const evidenceSection = evidenceMemo.closest("section");
+    expect(evidenceSection).not.toBeNull();
+    expect(within(evidenceSection as HTMLElement).getByText("Market")).toBeInTheDocument();
+    expect(within(evidenceSection as HTMLElement).getByText("Risk")).toBeInTheDocument();
+    expect(within(evidenceSection as HTMLElement).getByText("Options")).toBeInTheDocument();
+    expect(within(evidenceSection as HTMLElement).getByText("1 source")).toBeInTheDocument();
+    expect(within(evidenceSection as HTMLElement).getByText("2 sources")).toBeInTheDocument();
+    expect(within(evidenceSection as HTMLElement).getByText("0 sources")).toBeInTheDocument();
+  });
+
   it("loads persisted runs on startup and preserves newly created runs without duplicates", async () => {
     const user = userEvent.setup();
     const persistedRun = completedRun("run-1", "NVDA");

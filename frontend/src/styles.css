@@ -179,6 +179,72 @@ h1 {
   font-size: 1rem;
 }
 
+.analyst-section-card {
+  border: 1px solid #d3dbe0;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: inset 3px 0 0 #0e6f65;
+}
+
+.analyst-section-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.analyst-section-card h3 {
+  margin: 0 0 8px;
+  color: #162029;
+  font-size: 1rem;
+}
+
+.analyst-section-card p {
+  margin: 0;
+  color: #34434f;
+}
+
+.section-kind-badge,
+.source-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border: 1px solid #cfd8dd;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.section-kind-badge {
+  color: #0a5b52;
+  background: #e8f4f1;
+  text-transform: uppercase;
+}
+
+.section-kind-badge.risk {
+  border-color: #e3a8ae;
+  color: #8b1e2d;
+  background: #fff0f2;
+}
+
+.section-kind-badge.options {
+  border-color: #b5a7d8;
+  color: #4c347f;
+  background: #f3efff;
+}
+
+.source-count {
+  color: #5d6b75;
+  background: #f2f5f7;
+}
+
 .report-card {
   border: 1px solid #d3dbe0;
   border-radius: 7px;
