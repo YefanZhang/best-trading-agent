@@ -60,6 +60,15 @@ const sourceFixture = (id: string, overrides: Partial<SourceDocument> = {}): Sou
 });
 
 describe("App", () => {
+  it("renders the professional empty state before a report is available", () => {
+    render(<App listRuns={vi.fn().mockResolvedValue([])} />);
+
+    expect(screen.getByText("Research workflow")).toBeInTheDocument();
+    expect(screen.getByText("Data coverage")).toBeInTheDocument();
+    expect(screen.getByText("Agent roles")).toBeInTheDocument();
+    expect(screen.getByText("Expected outputs")).toBeInTheDocument();
+  });
+
   it("keeps a persistent live status region and updates it during a run", async () => {
     const user = userEvent.setup();
     const createRun = vi.fn(
