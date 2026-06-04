@@ -1,5 +1,6 @@
 import type { Report, ResearchRun, SourceDocument } from "../api/client";
 import { SourceDrawer } from "./SourceDrawer";
+import { TradePlanCard } from "./TradePlanCard";
 
 type ReportViewProps = {
   getSource: (sourceId: string) => Promise<SourceDocument>;
@@ -36,15 +37,7 @@ export function ReportView({ getSource, listRunSources, run, report }: ReportVie
       <section>
         <h2>Trade ideas</h2>
         {report.trade_ideas.map((idea) => (
-          <article className="report-card" key={idea.structure}>
-            <h3>{idea.structure}</h3>
-            <p>{idea.thesis}</p>
-            <ul>
-              {idea.risk_notes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
-          </article>
+          <TradePlanCard idea={idea} key={idea.structure} />
         ))}
       </section>
       <SourceDrawer getSource={getSource} listRunSources={listRunSources} report={report} />

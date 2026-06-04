@@ -125,6 +125,9 @@ describe("App", () => {
 
     expect(await screen.findByText("Market Snapshot")).toBeInTheDocument();
     expect(screen.getByText("Defined-risk call spread")).toBeInTheDocument();
+    expect(screen.getByText("Pending structured entry")).toBeInTheDocument();
+    expect(screen.getByText("Pending risk model")).toBeInTheDocument();
+    expect(screen.getByText("Can expire worthless")).toBeInTheDocument();
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
     expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
     expect(screen.getByText("src-1")).toBeInTheDocument();
