@@ -105,7 +105,11 @@ describe("App", () => {
       report: {
         id: "report-1",
         run_id: "run-1",
-        sections: [{ title: "Market Snapshot", body: "Fixture body", source_ids: ["src-1"] }],
+        sections: [
+          { title: "Market Snapshot", body: "Fixture body", source_ids: ["src-1"] },
+          { title: "Downside Risk Warnings", body: "Risk fixture body", source_ids: ["src-2", "src-3"] },
+          { title: "Options IV Volatility", body: "Options fixture body", source_ids: [] },
+        ],
         trade_ideas: [
           {
             structure: "Defined-risk call spread",
@@ -124,6 +128,14 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Start research" }));
 
     expect(await screen.findByText("Market Snapshot")).toBeInTheDocument();
+    expect(screen.getByText("Downside Risk Warnings")).toBeInTheDocument();
+    expect(screen.getByText("Options IV Volatility")).toBeInTheDocument();
+    expect(screen.getByText("Market")).toBeInTheDocument();
+    expect(screen.getByText("Risk")).toBeInTheDocument();
+    expect(screen.getByText("Options")).toBeInTheDocument();
+    expect(screen.getByText("1 source")).toBeInTheDocument();
+    expect(screen.getByText("2 sources")).toBeInTheDocument();
+    expect(screen.getByText("0 sources")).toBeInTheDocument();
     expect(screen.getAllByText("Defined-risk call spread")).toHaveLength(2);
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
     expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
