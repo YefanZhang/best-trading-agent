@@ -1,4 +1,5 @@
 import type { Report, ResearchRun, SourceDocument } from "../api/client";
+import { AnalystSectionCard } from "./AnalystSectionCard";
 import { DataQualitySummary } from "./DataQualitySummary";
 import { DecisionHeader } from "./DecisionHeader";
 import { SourceDrawer } from "./SourceDrawer";
@@ -27,10 +28,7 @@ export function ReportView({ getSource, listRunSources, run, report }: ReportVie
       <section>
         <h2>Evidence memo</h2>
         {report.sections.map((section) => (
-          <article className="report-card" key={section.title}>
-            <h3>{section.title}</h3>
-            <p>{section.body}</p>
-          </article>
+          <AnalystSectionCard key={section.title} section={section} />
         ))}
       </section>
       <section>

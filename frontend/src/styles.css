@@ -319,7 +319,8 @@ h1 {
   font-size: 1rem;
 }
 
-.report-card {
+.report-card,
+.analyst-section-card {
   border: 1px solid #d3dbe0;
   border-radius: 7px;
   background: #ffffff;
@@ -327,13 +328,77 @@ h1 {
   margin-bottom: 12px;
 }
 
-.report-card h3 {
+.section-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.section-kind-badge,
+.source-count {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.section-kind-badge {
+  border: 1px solid #b9c7d0;
+  color: #25323c;
+  background: #eef3f6;
+}
+
+.section-kind-badge.market {
+  border-color: #92b9d4;
+  color: #0d4d75;
+  background: #e8f4fb;
+}
+
+.section-kind-badge.fundamentals {
+  border-color: #b4c58e;
+  color: #51630b;
+  background: #f3f7e9;
+}
+
+.section-kind-badge.news {
+  border-color: #c9b7e8;
+  color: #5a3f91;
+  background: #f3eefc;
+}
+
+.section-kind-badge.options {
+  border-color: #d6b37a;
+  color: #7a4d00;
+  background: #fff4df;
+}
+
+.section-kind-badge.risk {
+  border-color: #e3a8ae;
+  color: #9a2733;
+  background: #fff1f2;
+}
+
+.source-count {
+  color: #5d6b75;
+  background: #f4f6f7;
+}
+
+.report-card h3,
+.analyst-section-card h3 {
   margin: 0 0 8px;
   color: #162029;
   font-size: 1rem;
 }
 
-.report-card p {
+.report-card p,
+.analyst-section-card p {
   margin: 0 0 10px;
   color: #34434f;
 }
