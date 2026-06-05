@@ -525,29 +525,88 @@ h1 {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 12px;
-  border: 0;
-  border-top: 1px solid #e0e7eb;
-  padding: 10px 0;
+  gap: 14px;
+  border: 1px solid transparent;
+  border-top-color: #e0e7eb;
+  border-radius: 8px;
+  padding: 11px 10px;
   color: inherit;
   background: transparent;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
 }
 
-.run-history-entry:hover {
+.run-history-entry:hover,
+.run-history-entry:focus-visible {
+  border-color: #8cb8ae;
   color: #0a5b52;
+  background: #eef8f6;
+  box-shadow: 0 0 0 3px rgba(14, 111, 101, 0.14);
+  outline: none;
 }
 
 .run-history-entry:first-of-type {
-  border-top: 0;
-  padding-top: 0;
+  border-top-color: transparent;
 }
 
-.run-history-entry span {
+.run-history-primary,
+.run-history-secondary {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.run-history-primary {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.run-history-primary strong {
+  overflow-wrap: anywhere;
+}
+
+.run-history-secondary {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.run-history-timestamp,
+.run-history-warning-count,
+.run-history-action {
   color: #5d6b75;
-  font-size: 0.88rem;
+  font-size: 0.78rem;
+}
+
+.run-history-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid #b8c8cf;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #25323c;
+  background: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.run-history-warning-count {
+  white-space: nowrap;
+}
+
+.run-history-action {
+  color: #0a5b52;
+  font-weight: 750;
+  white-space: nowrap;
 }
 
 .source-chip {

@@ -16,6 +16,11 @@ const completedRun = (id: string, ticker: string): ResearchRun => ({
   warnings: [],
 });
 
+const expectedRunTimestamp = (createdAt: string) =>
+  new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
+    new Date(createdAt),
+  );
+
 const resultFixture = ({
   run = completedRun("run-1", "NVDA"),
   sectionSourceIds = ["src-section"],
@@ -236,6 +241,46 @@ describe("App", () => {
 
     await waitFor(() => expect(createRun).toHaveBeenCalled());
     expect(screen.getAllByRole("button", { name: /NVDA completed/i })).toHaveLength(1);
+  });
+
+  it("shows formatted timestamps for persisted runs with created_at", async () => {
+    const createdAt = "2026-06-01T12:34:56Z";
+    const persistedRun: ResearchRun = {
+      ...completedRun("run-1", "NVDA"),
+      created_at: createdAt,
+    };
+    const listRuns = vi.fn().mockResolvedValue([persistedRun]);
+
+    render(<App listRuns={listRuns} />);
+
+    const runHistoryEntry = await screen.findByRole("button", { name: /NVDA completed/i });
+    expect(within(runHistoryEntry).getByText(expectedRunTimestamp(createdAt))).toBeInTheDocument();
+  });
+
+  it("shows warning counts for persisted runs with warnings", async () => {
+    const persistedRun: ResearchRun = {
+      ...completedRun("run-1", "AMD"),
+      warnings: [
+        { source: "news", message: "Partial news coverage" },
+        { source: "options", message: "Options chain partially delayed" },
+      ],
+    };
+    const listRuns = vi.fn().mockResolvedValue([persistedRun]);
+
+    render(<App listRuns={listRuns} />);
+
+    const runHistoryEntry = await screen.findByRole("button", { name: /AMD completed/i });
+    expect(within(runHistoryEntry).getByText("2 warnings")).toBeInTheDocument();
+  });
+
+  it("shows No timestamp for persisted runs without created_at", async () => {
+    const persistedRun = completedRun("run-1", "MSFT");
+    const listRuns = vi.fn().mockResolvedValue([persistedRun]);
+
+    render(<App listRuns={listRuns} />);
+
+    const runHistoryEntry = await screen.findByRole("button", { name: /MSFT completed/i });
+    expect(within(runHistoryEntry).getByText("No timestamp")).toBeInTheDocument();
   });
 
   it("shows an alert when persisted runs fail to load", async () => {
