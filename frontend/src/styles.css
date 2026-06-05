@@ -390,6 +390,78 @@ h1 {
   background: #f4f6f7;
 }
 
+.trade-plan-card {
+  border: 1px solid #d3dbe0;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.trade-plan-card h3 {
+  margin: 0 0 8px;
+  color: #162029;
+  font-size: 1rem;
+}
+
+.trade-plan-card p {
+  margin: 0 0 12px;
+  color: #34434f;
+}
+
+.trade-plan-card h4 {
+  margin: 0 0 8px;
+  color: #25323c;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.risk-note-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.risk-note-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e3a8ae;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #9a2733;
+  background: #fff1f2;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.execution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.execution-grid div {
+  border-left: 3px solid #d8e3e0;
+  padding-left: 10px;
+}
+
+.execution-grid dt {
+  color: #5d6b75;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.execution-grid dd {
+  margin: 4px 0 0;
+  color: #111820;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .report-card h3,
 .analyst-section-card h3 {
   margin: 0 0 8px;
