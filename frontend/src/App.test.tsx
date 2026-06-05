@@ -137,6 +137,9 @@ describe("App", () => {
     expect(screen.getByText("2 sources")).toBeInTheDocument();
     expect(screen.getByText("0 sources")).toBeInTheDocument();
     expect(screen.getAllByText("Defined-risk call spread")).toHaveLength(2);
+    expect(screen.getByText("Pending structured entry")).toBeInTheDocument();
+    expect(screen.getByText("Pending risk model")).toBeInTheDocument();
+    expect(screen.getByText("Can expire worthless")).toBeInTheDocument();
     expect(screen.getByText("Partial coverage")).toBeInTheDocument();
     expect(screen.getByLabelText("Source drawer")).toBeInTheDocument();
     expect(screen.getByText("src-1")).toBeInTheDocument();
