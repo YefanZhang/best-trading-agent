@@ -131,6 +131,41 @@ describe("App", () => {
     expect(screen.getByLabelText("Run history")).toBeInTheDocument();
   });
 
+  it("renders data quality summary with warnings and source ids", async () => {
+    const user = userEvent.setup();
+    const warningRun: ResearchRun = {
+      id: "run-1",
+      ticker: "AMD",
+      status: "completed_with_warnings",
+      warnings: [{ source: "options", message: "Options chain partially delayed" }],
+    };
+    const createRun = vi.fn().mockResolvedValue({
+      run: warningRun,
+      report: {
+        ...resultFixture({
+          run: warningRun,
+          sectionSourceIds: ["src-news", "src-shared"],
+          tradeSourceIds: ["src-shared", "src-options"],
+        }).report,
+        warnings: [{ source: "news", message: "Partial news coverage" }],
+      },
+    });
+
+    render(<App createRun={createRun} />);
+
+    await user.click(screen.getByRole("button", { name: "Start research" }));
+
+    const dataQualitySummary = await screen.findByLabelText("Data quality");
+    expect(within(dataQualitySummary).getAllByText("Data quality")).not.toHaveLength(0);
+    expect(within(dataQualitySummary).getByText("Evidence sources")).toBeInTheDocument();
+    expect(within(dataQualitySummary).getByText("Analyst sections")).toBeInTheDocument();
+    expect(within(dataQualitySummary).getByText("Trade ideas")).toBeInTheDocument();
+    expect(within(dataQualitySummary).getByText("Warnings")).toBeInTheDocument();
+    expect(within(dataQualitySummary).getByText("Coverage warning")).toBeInTheDocument();
+    expect(within(dataQualitySummary).getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("Partial news coverage")).toBeInTheDocument();
+  });
+
   it("renders the decision header after research completes", async () => {
     const user = userEvent.setup();
     const createRun = vi.fn().mockResolvedValue({

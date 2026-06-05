@@ -1,23 +1,15 @@
 import type { Report, ResearchRun } from "../api/client";
+import { getUniqueSourceIds, getWarningCount } from "../domain/reportSelectors";
 
 type DecisionHeaderProps = {
   run: ResearchRun;
   report: Report;
 };
 
-function countUniqueSources(report: Report): number {
-  const sourceIds = new Set([
-    ...report.sections.flatMap((section) => section.source_ids),
-    ...report.trade_ideas.flatMap((idea) => idea.source_ids),
-  ]);
-
-  return sourceIds.size;
-}
-
 export function DecisionHeader({ run, report }: DecisionHeaderProps) {
   const primaryIdea = report.trade_ideas[0]?.structure ?? "No primary trade idea";
-  const warningCount = report.warnings.length + run.warnings.length;
-  const uniqueSourceCount = countUniqueSources(report);
+  const warningCount = getWarningCount(run, report);
+  const uniqueSourceCount = getUniqueSourceIds(report).length;
 
   return (
     <header className="decision-header" aria-label="Decision summary">
