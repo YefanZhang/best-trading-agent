@@ -1,4 +1,5 @@
 import type { Report, ResearchRun, SourceDocument } from "../api/client";
+import { DataQualitySummary } from "./DataQualitySummary";
 import { DecisionHeader } from "./DecisionHeader";
 import { SourceDrawer } from "./SourceDrawer";
 
@@ -13,6 +14,7 @@ export function ReportView({ getSource, listRunSources, run, report }: ReportVie
   return (
     <section className="report-view" aria-label="Research report">
       <DecisionHeader run={run} report={report} />
+      <DataQualitySummary run={run} report={report} />
       {report.warnings.length > 0 ? (
         <section className="warning-list" aria-label="Warnings">
           {report.warnings.map((warning) => (

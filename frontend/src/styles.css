@@ -220,6 +220,88 @@ h1 {
   gap: 20px;
 }
 
+
+.data-quality-summary {
+  border: 1px solid #cfd8dd;
+  border-radius: 9px;
+  padding: 14px;
+  color: #25323c;
+  background: #ffffff;
+}
+
+.data-quality-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.data-quality-heading .eyebrow {
+  margin-bottom: 4px;
+}
+
+.data-quality-heading h2 {
+  margin: 0;
+}
+
+.coverage-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.coverage-status-badge.complete {
+  border: 1px solid #8cb8ae;
+  color: #0a5b52;
+  background: #e8f4f1;
+}
+
+.coverage-status-badge.warning {
+  border: 1px solid #e0bc75;
+  color: #7a4b00;
+  background: #fff7df;
+}
+
+.coverage-status-badge.limited {
+  border: 1px solid #d4a2a8;
+  color: #8c1f2d;
+  background: #fff0f1;
+}
+
+.data-quality-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.data-quality-metrics div {
+  border-left: 3px solid #d8e3e0;
+  padding-left: 10px;
+}
+
+.data-quality-metrics dt {
+  color: #5d6b75;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.data-quality-metrics dd {
+  margin: 4px 0 0;
+  color: #111820;
+  font-size: 1.08rem;
+  font-weight: 750;
+}
+
 .warning-list {
   border: 1px solid #e3a8ae;
   border-radius: 7px;
