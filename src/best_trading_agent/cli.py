@@ -10,6 +10,7 @@ from best_trading_agent.research.service import ResearchService
 from best_trading_agent.storage.database import create_session_factory
 from best_trading_agent.storage.repositories import ResearchRepository
 from best_trading_agent.storage.schema import create_schema
+from best_trading_agent.trading.service import TradingLoopService, TradingScenario
 
 app = typer.Typer(no_args_is_help=True)
 runs_app = typer.Typer(no_args_is_help=True)
@@ -90,3 +91,35 @@ def sources_show(ctx: typer.Context, source_id: str) -> None:
 @app.command("runs-list")
 def runs_list(ctx: typer.Context) -> None:
     nested_runs_list(ctx)
+
+
+@app.command("trading-demo")
+def trading_demo(
+    ctx: typer.Context,
+    ticker: str,
+    scenario: Annotated[
+        TradingScenario,
+        typer.Option("--scenario", help="Demo scenario: approved, approval-required, rejected."),
+    ] = TradingScenario.APPROVED,
+) -> None:
+    repository = _repository(ctx.obj["database_url"])
+    result = TradingLoopService(repository).run_demo(ticker, scenario)
+    typer.echo(f"{result.market_event.symbol} {scenario.value} {result.run_id}")
+    typer.echo(f"Research: {result.research_summary.summary}")
+    typer.echo(
+        "Signal: "
+        f"{result.signal_intent.intent_type.value} "
+        f"{result.signal_intent.strategy.value} "
+        f"qty={result.signal_intent.quantity} "
+        f"key={result.signal_intent.idempotency_key}"
+    )
+    typer.echo(f"Risk: {result.risk_decision.decision.value}")
+    if result.simulated_order is None:
+        typer.echo("Order: not_executed")
+    else:
+        order = result.simulated_order
+        typer.echo(
+            f"Order: {order.status.value} {order.side.value} "
+            f"{order.quantity} {order.symbol} @ {order.fill_price}"
+        )
+    typer.echo(f"Audit: {result.audit_record.id}")

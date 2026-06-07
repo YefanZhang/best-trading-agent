@@ -15,11 +15,13 @@ from best_trading_agent.domain.models import (
     TradeIdea,
     WatchlistEntry,
 )
+from best_trading_agent.domain.trading import TradingAuditRecord
 from best_trading_agent.storage.schema import (
     OptionsSnapshotRecord,
     ReportRecord,
     RunRecord,
     SourceRecord,
+    TradingAuditRecordRecord,
     WatchlistRecord,
 )
 
@@ -200,3 +202,31 @@ class ResearchRepository:
                 WatchlistEntry(ticker=record.ticker, created_at=_as_utc(record.created_at))
                 for record in records
             ]
+
+    def save_trading_audit_record(self, audit_record: TradingAuditRecord) -> None:
+        with self._session_factory() as session:
+            session.add(
+                TradingAuditRecordRecord(
+                    id=audit_record.id,
+                    run_id=audit_record.run_id,
+                    created_at=_as_utc(audit_record.created_at),
+                    payload=audit_record.model_dump(mode="json"),
+                )
+            )
+            session.commit()
+
+    def get_trading_audit_record(self, audit_id: str) -> TradingAuditRecord | None:
+        with self._session_factory() as session:
+            record = session.get(TradingAuditRecordRecord, audit_id)
+            if record is None:
+                return None
+            return TradingAuditRecord.model_validate(record.payload)
+
+    def list_trading_audit_records(self) -> list[TradingAuditRecord]:
+        with self._session_factory() as session:
+            records = (
+                session.query(TradingAuditRecordRecord)
+                .order_by(TradingAuditRecordRecord.created_at.asc())
+                .all()
+            )
+            return [TradingAuditRecord.model_validate(record.payload) for record in records]
