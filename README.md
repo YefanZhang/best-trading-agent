@@ -58,6 +58,16 @@ uv run best-trading-agent trading-demo NVDA --scenario approval-required
 uv run best-trading-agent trading-demo NVDA --scenario rejected
 ```
 
+## Simulated Trading API
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/trading/demo \
+  -H 'content-type: application/json' \
+  -d '{"ticker":"NVDA","scenario":"approved"}'
+
+curl http://127.0.0.1:8000/api/trading/audits
+```
+
 ## Live Data Mode
 
 The default data mode is `fixture`, which returns deterministic local data for fast tests.
