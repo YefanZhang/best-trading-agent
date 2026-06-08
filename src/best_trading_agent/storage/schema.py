@@ -72,6 +72,15 @@ class WatchlistRecord(Base):
     created_at: Mapped[Any] = mapped_column(DateTime(timezone=True))
 
 
+class TradingAuditRecordRecord(Base):
+    __tablename__ = "trading_audit_records"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String, index=True)
+    created_at: Mapped[Any] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+
+
 def create_schema(session_factory: sessionmaker[Session]) -> None:
     bind = session_factory.kw["bind"]
     Base.metadata.create_all(bind)

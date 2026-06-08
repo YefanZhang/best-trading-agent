@@ -10,6 +10,8 @@ Local-first research assistant for US equities and listed options.
 - FastAPI endpoint for starting research runs.
 - Typer CLI for starting research runs and listing saved runs.
 - React/TypeScript research workbench that calls the API.
+- Deterministic simulated trading loop demo with risk checks, simulated fills, state updates,
+  and audit records.
 
 The default data adapter is a deterministic development fixture so tests and demos stay fast. Live mode is available behind the same adapter interface when you want current public data.
 
@@ -51,6 +53,19 @@ npm --prefix frontend run dev
 ```bash
 uv run best-trading-agent research NVDA
 uv run best-trading-agent runs-list
+uv run best-trading-agent trading-demo NVDA --scenario approved
+uv run best-trading-agent trading-demo NVDA --scenario approval-required
+uv run best-trading-agent trading-demo NVDA --scenario rejected
+```
+
+## Simulated Trading API
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/trading/demo \
+  -H 'content-type: application/json' \
+  -d '{"ticker":"NVDA","scenario":"approved"}'
+
+curl http://127.0.0.1:8000/api/trading/audits
 ```
 
 ## Live Data Mode
